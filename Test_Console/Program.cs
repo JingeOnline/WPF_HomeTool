@@ -1,40 +1,26 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-
-// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
-//创建一个Host和BackgroundService示例
-var host = Host.CreateDefaultBuilder()
-    .ConfigureServices((context, services) =>
-    {
-        services.AddHostedService<DemoBackgroundService>();
-    })
-    .Build();
-host.Start();
-await Task.Delay(5000);
-host.StopAsync().GetAwaiter().GetResult();
-
-internal class DemoBackgroundService : BackgroundService
+using Microsoft.Owin.Hosting;
+using System.Threading;
+using System.Threading.Tasks;
+using Test_Console;
+public class Program
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    static void Main()
     {
-        // Your background task logic here
-        while (!stoppingToken.IsCancellationRequested)
+        string baseAddress = "http://localhost:9000/";
+
+        // Start OWIN host 
+        using (WebApp.Start<Startup>(url: baseAddress))
         {
-            // Simulate work
-            try
-            {
-                await Task.Delay(1000, stoppingToken);
-            }
-            catch (TaskCanceledException)
-            {
-                Console.WriteLine("Task cancelled.");
-            }
-            System.Console.WriteLine(DateTime.Now + "Background service is running...");
+            // Create HttpClient and make a request to api/values 
+            HttpClient client = new HttpClient();
+
+            var response = client.GetAsync(baseAddress + "api/values").Result;
+
+            Console.WriteLine(response);
+            Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+            Console.ReadLine();
         }
-        Console.WriteLine("CancellationToken cancelled.");
-        return;
     }
 }

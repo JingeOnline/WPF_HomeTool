@@ -38,4 +38,9 @@
     </Resource>
   </ItemGroup>
 
+	<!--添加AspNetCore组件，没有这行代码，项目中无法使用AspNetCore的功能-->
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
 </Project>

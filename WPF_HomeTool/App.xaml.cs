@@ -1,14 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System.ComponentModel;
-using System.Configuration;
-using System.Data;
-using System.Runtime.CompilerServices;
-using System.Windows;
+﻿
+using Microsoft.AspNetCore.Hosting;
 using WPF_HomeTool.Navigation;
 using WPF_HomeTool.Services;
 using WPF_HomeTool.ViewModels;
 using WPF_HomeTool.Views;
+
 
 namespace WPF_HomeTool
 {
@@ -17,8 +13,22 @@ namespace WPF_HomeTool
     /// </summary>
     public partial class App : Application
     {
+        //添加Web Api服务，想要添加必须在project中添加 <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        private static readonly IHost _webHost = Host.CreateDefaultBuilder().ConfigureWebHostDefaults(
+            webBuilder =>
+            {
+                webBuilder.UseStartup<WebServerStartup>();
+                webBuilder.UseUrls("http://*:5010");
+            }).Build();
+        //如果需要指定web api的配置文件，则使用下面的代码
+        //.ConfigureAppConfiguration((hostingContext, config) => {
+        //    config.Sources.Clear();//清除appsettings.josn中的配置源
+        //    config.AddJsonFile("JingeConfig.json");
+        //}).Build();
+
         private static readonly IHost _host = Host.CreateDefaultBuilder()
-        .ConfigureServices((context, services) => {
+        .ConfigureServices((context, services) =>
+        {
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<MainWindow>();
             services.AddSingleton<MainWindowViewModel>();
@@ -39,6 +49,7 @@ namespace WPF_HomeTool
             //指定启动窗口
             this.MainWindow = _host.Services.GetRequiredService<MainWindow>();
             this.MainWindow.Show();
+            _webHost.Start();
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -47,6 +58,8 @@ namespace WPF_HomeTool
             // Stop the host and dispose
             _host.StopAsync().GetAwaiter().GetResult();
             _host.Dispose();
+            _webHost.StopAsync().GetAwaiter().GetResult();
+            _webHost.Dispose();
         }
 
     }
