@@ -1,9 +1,12 @@
 ﻿
 using Microsoft.AspNetCore.Hosting;
+using System.IO;
 using WPF_HomeTool.Navigation;
 using WPF_HomeTool.Services;
 using WPF_HomeTool.ViewModels;
 using WPF_HomeTool.Views;
+using WPF_HomeTool.Controls;
+using WPF_HomeTool.Helpers;
 
 
 namespace WPF_HomeTool
@@ -18,7 +21,8 @@ namespace WPF_HomeTool
             webBuilder =>
             {
                 webBuilder.UseStartup<WebServerStartup>();
-                webBuilder.UseUrls("http://*:5010");
+                string port=ConfigHelper.ReadKeyValue("ApiPort")!;
+                webBuilder.UseUrls("http://*:"+port);
             }).Build();
         //如果需要指定web api的配置文件，则使用下面的代码
         //.ConfigureAppConfiguration((hostingContext, config) => {
@@ -29,7 +33,7 @@ namespace WPF_HomeTool
         private static readonly IHost _host = Host.CreateDefaultBuilder()
         .ConfigureServices((context, services) =>
         {
-            services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<WPF_HomeTool.Navigation.INavigationService, WPF_HomeTool.Navigation.NavigationService>();
             services.AddSingleton<MainWindow>();
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<WebServerPage>();
@@ -49,17 +53,35 @@ namespace WPF_HomeTool
             //指定启动窗口
             this.MainWindow = _host.Services.GetRequiredService<MainWindow>();
             this.MainWindow.Show();
-            _webHost.Start();
+            //_webHost.Start();
+            try
+            {
+                _webHost.Start();
+            }
+            catch (IOException ex)
+            {
+                ModernMessageBox.Show(ex.Message, "API端口已被占用", Controls.MessageBoxButton.OK, Controls.MessageBoxImage.Warning);
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             base.OnExit(e);
-            // Stop the host and dispose
-            _host.StopAsync().GetAwaiter().GetResult();
-            _host.Dispose();
-            _webHost.StopAsync().GetAwaiter().GetResult();
-            _webHost.Dispose();
+            MyOnExitAsync().GetAwaiter().GetResult();
+
+        }
+
+        //为了避免退出的时候在UI线程发生死锁，所以在这里统一执行异步方法，最后配置ConfigureAwait(false)
+        async Task MyOnExitAsync()
+        {
+            await Task.Run(async () =>
+            {
+                //await Task.Delay(5000);
+                await _host.StopAsync();
+                _host.Dispose();
+                await _webHost.StopAsync();
+                _webHost.Dispose();
+            }).ConfigureAwait(false);
         }
 
     }

@@ -16,8 +16,11 @@ namespace WPF_HomeTool.Services
             services.AddControllers();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IHostApplicationLifetime appLifetime)
         {
+            appLifetime.ApplicationStopping.Register(() => {
+                //当程序退出时，会执行这里的回调方法
+            });
             app.UseRouting();
             app.UseEndpoints(routes =>
             {
@@ -29,7 +32,7 @@ namespace WPF_HomeTool.Services
     public class HomeController()
     {
         [HttpGet("/")]
-        public string Get() => "Hello World!";
+        public string Get() => "This is the root url of api.";
     }
 
     [Route("pc-command")]

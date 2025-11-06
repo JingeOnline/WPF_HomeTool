@@ -14,8 +14,11 @@ namespace WPF_HomeTool.Services
         {
             try
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
+                    //必须传入CancellationToken才能在App.xaml.cs中停止时，触发取消任务。否则任务不能被终止。
+                    //await Task.Delay(10000,stoppingToken);
+                    //Debug.WriteLine("10 SECONDS stop");
                     string? OneDrivePath = Environment.GetEnvironmentVariable("OneDriveConsumer");
                     if (!string.IsNullOrEmpty(OneDrivePath))
                     {
@@ -26,7 +29,7 @@ namespace WPF_HomeTool.Services
                             if (Directory.Exists(targetFolderPath))
                             {
                                 //获取当前应用程序exe文件所在的目录
-                                string exePath = System.Environment.ProcessPath;
+                                string exePath = System.Environment.ProcessPath!;
                                 //获取文件夹路径
                                 string? exeDirectory = Path.GetDirectoryName(exePath);
                                 Debug.WriteLine($"Current exe path: {exePath}");
