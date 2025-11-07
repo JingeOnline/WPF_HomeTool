@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF_HomeTool"
+        xmlns:tb="clr-namespace:H.NotifyIcon;assembly=H.NotifyIcon.Wpf"
         mc:Ignorable="d"
-        Title="MainWindow"
+        Title="Daily WPF Helper"
     
     xmlns:helpers="clr-namespace:WPF_HomeTool.Helpers"
     d:DataContext="{d:DesignInstance local:MainWindow, IsDesignTimeCreatable=False}"
@@ -14,6 +15,7 @@
     WindowStartupLocation="CenterScreen"
     MinWidth="480"
     MinHeight="250"
+    Closing="Window_Closing"
     >
     <Window.Resources>
         <helpers:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter" />
@@ -211,6 +213,21 @@
                            <!--MouseDown="Window_MouseDown"--> 
                 </Border>
             </Grid>
+            <!--任务栏托盘图标，使用开源项目 https://github.com/HavenDV/H.NotifyIcon-->
+            <tb:TaskbarIcon x:Name="TrayIcon" ToolTipText="Daily WPF Helper 双击恢复窗口" Visibility="Collapsed"
+                            IconSource="/Resources/Images/house64.ico"
+                            MenuActivation="LeftOrRightClick"
+                            PopupActivation="DoubleClick"
+                            TrayMouseDoubleClick="TrayIconShowWindow_Click">
+                <!--图标的右键菜单-->
+                <tb:TaskbarIcon.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Show Window" x:Name="TrayIconShowWindow" Click="TrayIconShowWindow_Click"/>
+                        <!--<Separator/>-->
+                        <MenuItem Header="Exit" x:Name="TrayIconExit" Click="TrayIconExit_Click"/>
+                    </ContextMenu>
+                </tb:TaskbarIcon.ContextMenu>
+            </tb:TaskbarIcon>
         </Grid>
     </Border>
 </Window>

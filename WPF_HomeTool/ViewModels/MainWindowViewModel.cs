@@ -20,6 +20,5 @@ namespace WPF_HomeTool.ViewModels
         {
             NavigationPanelIsOpen = !NavigationPanelIsOpen;
         }
-
     }
 }

@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Shell;
+using System.Runtime.CompilerServices;
 
 namespace WPF_HomeTool
 {
@@ -118,5 +119,23 @@ namespace WPF_HomeTool
             }
         }
 
+        private void TrayIconShowWindow_Click(object sender, RoutedEventArgs e)
+        {
+            this.Show();
+            WindowState = WindowState.Normal;
+        }
+
+        private void TrayIconExit_Click(object sender, RoutedEventArgs e)
+        {
+            TrayIcon.Dispose();
+            Application.Current.Shutdown();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;//取消默认的按下关闭按钮的行为，否则会触发程序的关闭
+            this.Hide();
+            TrayIcon.Visibility = Visibility.Visible;//显示托盘
+        }
     }
 }

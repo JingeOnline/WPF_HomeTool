@@ -105,7 +105,7 @@
 
 
             <!-- Content Area -->
-            <Border Grid.Row="1" Background="White" Padding="20,16">
+            <Border Grid.Row="1" Background="White" Padding="16,16">
                 <Grid>
                     <!-- Message -->
                     <TextBlock x:Name="MessageText"
@@ -118,11 +118,12 @@
             </Border>
 
             <!-- Button Area -->
-            <Border Grid.Row="2" 
+            <!--<Border Grid.Row="2" 
                     Background="#F5F5F5"
                     CornerRadius="0,0,8,8"
                     BorderThickness="0,1,0,0"
-                    BorderBrush="#E0E0E0">
+                    BorderBrush="#E0E0E0">-->
+            <Border Grid.Row="2">
                 <StackPanel x:Name="ButtonPanel"
                           Orientation="Horizontal"
                           HorizontalAlignment="Right"
