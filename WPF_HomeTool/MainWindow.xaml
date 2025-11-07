@@ -142,6 +142,13 @@
                                 <TextBlock Text="Home"/>
                             </StackPanel>
                         </ListBoxItem>
+                        <!--FileFolderPage-->
+                        <ListBoxItem Tag="WPF_HomeTool.Views.FileFolderPage" >
+                            <StackPanel Orientation="Horizontal"  >
+                                <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xED25;" />
+                                <TextBlock Text="File Folder Tools"/>
+                            </StackPanel>
+                        </ListBoxItem>
                         <!--WebServerPage-->
                         <ListBoxItem Tag="WPF_HomeTool.Views.WebServerPage" >
                             <StackPanel Orientation="Horizontal"  >
@@ -149,34 +156,6 @@
                                 <TextBlock Text="Web Server"/>
                             </StackPanel>
                         </ListBoxItem>
-                        <!--ItemsSource="{Binding VM.NavigationItems}"-->
-                        <!--SelectedItem="{Binding VM.SelectedNavigationItem, Mode=TwoWay}">-->
-                        <!--<ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="8" >
-                                    <TextBlock
-                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                        FontSize="16"
-                                        VerticalAlignment="Center"
-                                        Text="{Binding Icon}" />
-                                    <TextBlock
-                                        Margin="16,0,0,0"
-                                        VerticalAlignment="Center"
-                                        Text="{Binding DisplayName}">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding DataContext.VM.NavigationPanelIsOpen, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>-->
                     </ListBox>
                     <!--设置按钮-->
                     <Button

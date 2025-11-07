@@ -42,6 +42,8 @@ namespace WPF_HomeTool
             services.AddSingleton<HomePageViewModel>();
             services.AddSingleton<SettingsPage>();
             services.AddSingleton<SettingsPageViewModel>();
+            services.AddSingleton<FileFolderPage>();
+            services.AddSingleton<FileFolderPageViewModel>();
 
             services.AddHostedService<SyncConfigFileService>();
         }).Build();
