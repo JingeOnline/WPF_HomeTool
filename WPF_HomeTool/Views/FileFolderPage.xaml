@@ -10,6 +10,13 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="FileFolderPage">
 
+    <Page.Resources>
+        <TextBlock x:Key="IconAdd" Text="&#xECC8;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+        <TextBlock x:Key="IconRemove" Text="&#xECC9;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+        <TextBlock x:Key="IconClear" Text="&#xE894;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+        <TextBlock x:Key="IconPreview" Text="&#xF19D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+        <TextBlock x:Key="IconSave" Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -28,19 +35,27 @@
                 CornerRadius="{DynamicResource ControlCornerRadius}">
                 <!--Padding="{StaticResource ExpanderPadding}"--> 
             <Menu >
-                <ComboBox Width="200">
+                <ComboBox Width="200" Margin="0" Padding="0">
                     <ComboBoxItem Content="照片视频添加日期" IsSelected="True"/>
                     <ComboBoxItem Content="文件移动"/>
                     <ComboBoxItem Content="文件压缩"/>
                 </ComboBox>
-                <Button Content="执行"/>
+                <Separator/>
+                <MenuItem Header="添加" Icon="{StaticResource IconAdd}" Command="{Binding VM.AddFilesCommand}"/>
+                <MenuItem Header="删除" Icon="{StaticResource IconRemove}" Command="{Binding VM.RemoveFilesCommand}" CommandParameter="{Binding ElementName=DataGrid_FileInfo,Path=SelectedItems}"/>
+                <MenuItem Header="清空" Icon="{StaticResource IconClear}" Command="{Binding VM.ClearFilesCommand}"/>
+                <Separator/>
+                <MenuItem Header="预览" Icon="{StaticResource IconPreview}"/>
+                <MenuItem Header="执行" Icon="{StaticResource IconSave}"/>
+                <!--<Button Content="执行"/>-->
             </Menu>
         </Border>
         <Grid Grid.Row="2" Margin="0,16,0,8"
               AllowDrop="True" 
               helpers:FileDragDropHelper.IsFileDragDropEnabled="True" 
               helpers:FileDragDropHelper.FileDragDropTarget="{Binding VM}">
-            <DataGrid ItemsSource="{Binding VM.Files}" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True">
+            <DataGrid x:Name="DataGrid_FileInfo" ItemsSource="{Binding VM.Files}" 
+                      AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridCell">
                         <Setter Property="VerticalAlignment" Value="Center" />
@@ -60,11 +75,13 @@
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <!--<ColumnDefinition Width="auto"/>-->
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="{Binding VM.FilesCount,Mode=OneWay,StringFormat='Files Count: '}" Grid.Column="0"/>
-            <TextBlock Text="test" Grid.Column="1"/>
+            <!--<TextBlock Text="{Binding VM.FilesCount,Mode=OneWay,StringFormat='Files Count: {0}'}" Grid.Column="0"/>-->
+            <TextBlock Text="{Binding VM.FilesCount,Mode=OneWay}" Grid.Column="0"/>
+            <!--<TextBlock Text="状态" HorizontalAlignment="Center" Grid.Column="1"/>-->
+            <TextBlock Text="{Binding VM.Hint,Mode=OneWay}" HorizontalAlignment="Right" Grid.Column="2"/>
         </Grid>
     </Grid>
 </Page>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,13 +15,48 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private ObservableCollection<FileInfoPreview> _Files = new ObservableCollection<FileInfoPreview>();
         [ObservableProperty]
-        private int _FilesCount;
+        private string _FilesCount;
+        [ObservableProperty]
+        private string _Hint;
 
         public FileFolderPageViewModel()
         {
 
         }
 
+        [RelayCommand]
+        private void RemoveFiles(object selectedItems)
+        {
+            IList objectList = selectedItems as IList;
+            List<FileInfoPreview> selectedDirectoryInfos = objectList.Cast<FileInfoPreview>().ToList();
+
+            foreach (FileInfoPreview fileInfoPre in selectedDirectoryInfos)
+            {
+                Files.Remove(fileInfoPre);
+            }
+            FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x => x.FileInfo));
+        }
+        [RelayCommand]
+        private void AddFiles()
+        {
+            //官方教程 https://learn.microsoft.com/en-us/dotnet/desktop/wpf/windows/how-to-open-common-system-dialog-box
+            var dialog = new Microsoft.Win32.OpenFileDialog();
+            dialog.Multiselect = true;
+            bool? result = dialog.ShowDialog();
+            if(result==true)
+            {
+                OnFileDrop(dialog.FileNames);
+            }
+            FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x => x.FileInfo));
+        }
+        [RelayCommand]
+        private void ClearFiles()
+        {
+            _Files.Clear();
+            FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x => x.FileInfo));
+        }
+
+        //响应页面上拖拽过来的文件或者文件夹
         public void OnFileDrop(string[] paths)
         {
             foreach (string filePath in paths)
@@ -43,7 +79,7 @@ namespace WPF_HomeTool.ViewModels
                     }
                 }
             }
-            FilesCount = Files.Count;
+            FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x=>x.FileInfo));
         }
     }
 }
