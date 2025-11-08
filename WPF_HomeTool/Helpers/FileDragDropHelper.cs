@@ -8,6 +8,8 @@ using System.Windows.Controls;
 
 namespace WPF_HomeTool.Helpers
 {
+    //参考教程 https://stackoverflow.com/questions/5916154/how-to-handle-drag-drop-without-violating-mvvm-principals
+    //该Helper不仅支持文件拖拽，也支持文件夹拖拽
     public class FileDragDropHelper
     {
         public static bool GetIsFileDragDropEnabled(DependencyObject obj)
@@ -39,8 +41,14 @@ namespace WPF_HomeTool.Helpers
         private static void OnFileDragDropEnabled(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue == e.OldValue) return;
-            var control = d as Control;
-            if (control != null) control.Drop += OnDrop;
+            
+            //转换为UIElement类型，则Border和Grid等控件都能响应
+            var uIElement = d as UIElement;
+            if (uIElement != null) uIElement.Drop += OnDrop;
+
+            //如果转换成Control类型，则Border和Grid等控件无法响应
+            //var control = d as Control;
+            //if (control != null) control.Drop += OnDrop;
         }
 
         private static void OnDrop(object _sender, DragEventArgs _dragEventArgs)

@@ -3,7 +3,7 @@
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
 
-namespace WPF_HomeTool.Helpers;
+namespace WPF_HomeTool.Converters;
 
 /// <summary>
 /// Converts a page name to a page type

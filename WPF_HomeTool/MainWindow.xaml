@@ -8,17 +8,17 @@
         mc:Ignorable="d"
         Title="Daily WPF Helper"
     
-    xmlns:helpers="clr-namespace:WPF_HomeTool.Helpers"
-    d:DataContext="{d:DesignInstance local:MainWindow, IsDesignTimeCreatable=False}"
-    d:DesignHeight="650"
-    d:DesignWidth="1000"
-    WindowStartupLocation="CenterScreen"
-    MinWidth="480"
-    MinHeight="250"
-    Closing="Window_Closing"
+        xmlns:converters="clr-namespace:WPF_HomeTool.Converters"
+        d:DataContext="{d:DesignInstance local:MainWindow, IsDesignTimeCreatable=False}"
+        d:DesignHeight="650"
+        d:DesignWidth="1000"
+        WindowStartupLocation="CenterScreen"
+        MinWidth="480"
+        MinHeight="250"
+        Closing="Window_Closing"
     >
     <Window.Resources>
-        <helpers:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter" />
+        <converters:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter" />
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
         </Style>
@@ -146,7 +146,7 @@
                         <ListBoxItem Tag="WPF_HomeTool.Views.FileFolderPage" >
                             <StackPanel Orientation="Horizontal"  >
                                 <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xED25;" />
-                                <TextBlock Text="File Folder Tools"/>
+                                <TextBlock Text="File And Folder Tools"/>
                             </StackPanel>
                         </ListBoxItem>
                         <!--WebServerPage-->

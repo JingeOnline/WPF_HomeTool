@@ -1,4 +1,4 @@
-namespace WPF_HomeTool.ViewModels;
+namespace WPF_HomeTool.Converters;
 
 /// <summary>
 /// Converts an image id to a brush

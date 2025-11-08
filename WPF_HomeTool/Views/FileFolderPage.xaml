@@ -4,11 +4,67 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:WPF_HomeTool.Views"
+      xmlns:controls="clr-namespace:WPF_HomeTool.Controls"
+      xmlns:helpers="clr-namespace:WPF_HomeTool.Helpers"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="FileFolderPage">
 
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <controls:PageHeader
+            Grid.Row="0"
+            Title="File And Folder Tools"
+            Description="文件和文件夹管理工具集"/>
+        <Border Grid.Row="1" 
+                Background="{DynamicResource ExpanderHeaderBackground}" 
+                BorderBrush="{DynamicResource ExpanderHeaderBorderBrush}" 
+                BorderThickness="{StaticResource ExpanderBorderThemeThickness}" 
+                CornerRadius="{DynamicResource ControlCornerRadius}">
+                <!--Padding="{StaticResource ExpanderPadding}"--> 
+            <Menu >
+                <ComboBox Width="200">
+                    <ComboBoxItem Content="照片视频添加日期" IsSelected="True"/>
+                    <ComboBoxItem Content="文件移动"/>
+                    <ComboBoxItem Content="文件压缩"/>
+                </ComboBox>
+                <Button Content="执行"/>
+            </Menu>
+        </Border>
+        <Grid Grid.Row="2" Margin="0,16,0,8"
+              AllowDrop="True" 
+              helpers:FileDragDropHelper.IsFileDragDropEnabled="True" 
+              helpers:FileDragDropHelper.FileDragDropTarget="{Binding VM}">
+            <DataGrid ItemsSource="{Binding VM.Files}" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True">
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name" Binding="{Binding FileInfo.Name}" />
+                    <DataGridTextColumn Header="Size(Byte)" Binding="{Binding FileInfo.Length}"/>
+                    <DataGridTextColumn Header="Size Readable" Binding="{Binding SizeReadable}"/>
+                    <DataGridTextColumn Header="Extension" Binding="{Binding FileInfo.Extension}"/>
+                    <DataGridTextColumn Header="Creation" Binding="{Binding FileInfo.CreationTime, ConverterCulture='zh-CN'}"/>
+                    <DataGridTextColumn Header="Last Write" Binding="{Binding FileInfo.LastWriteTime, ConverterCulture='zh-CN'}"/>
+                    <DataGridTextColumn Header="Name Preview" Binding="{Binding NamePreview}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding VM.FilesCount,Mode=OneWay,StringFormat='Files Count: '}" Grid.Column="0"/>
+            <TextBlock Text="test" Grid.Column="1"/>
+        </Grid>
     </Grid>
 </Page>

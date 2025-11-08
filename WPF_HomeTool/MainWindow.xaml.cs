@@ -133,9 +133,12 @@ namespace WPF_HomeTool
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            e.Cancel = true;//取消默认的按下关闭按钮的行为，否则会触发程序的关闭
-            this.Hide();
-            TrayIcon.Visibility = Visibility.Visible;//显示托盘
+            if (ConfigHelper.ReadKeyValue("IsCloseGoToTrayIcon") == "True")
+            {
+                e.Cancel = true;//取消默认的按下关闭按钮的行为，否则会触发程序的关闭
+                this.Hide();
+                TrayIcon.Visibility = Visibility.Visible;//显示托盘
+            }
         }
     }
 }

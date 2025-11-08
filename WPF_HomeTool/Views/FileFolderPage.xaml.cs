@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WPF_HomeTool.ViewModels;
 
 namespace WPF_HomeTool.Views
 {
@@ -20,8 +21,11 @@ namespace WPF_HomeTool.Views
     /// </summary>
     public partial class FileFolderPage : Page
     {
-        public FileFolderPage()
+        public FileFolderPageViewModel VM { get;}
+        public FileFolderPage(FileFolderPageViewModel viewModel)
         {
+            VM = viewModel;
+            DataContext = this;
             InitializeComponent();
         }
     }

@@ -1,4 +1,4 @@
-namespace WPF_HomeTool.Helpers;
+namespace WPF_HomeTool.Converters;
 
 /// <summary>
 /// Converts an empty string to Visibility.Collapsed
