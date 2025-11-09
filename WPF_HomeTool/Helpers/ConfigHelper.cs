@@ -28,5 +28,12 @@ namespace WPF_HomeTool.Helpers
             Configuration cfa = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             return cfa.AppSettings.Settings[key]?.Value;
         }
+
+        public static List<string>? ReadKeyValueIntoList(string key)
+        {
+            Configuration cfa = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            string? value= cfa.AppSettings.Settings[key]?.Value;
+            return value?.Split(',', StringSplitOptions.TrimEntries)?.ToList();
+        }
     }
 }

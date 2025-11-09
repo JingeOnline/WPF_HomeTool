@@ -143,10 +143,10 @@
                             </StackPanel>
                         </ListBoxItem>
                         <!--FileFolderPage-->
-                        <ListBoxItem Tag="WPF_HomeTool.Views.FileFolderPage" >
+                        <ListBoxItem Tag="WPF_HomeTool.Views.FilesRenamePage" >
                             <StackPanel Orientation="Horizontal"  >
-                                <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xED25;" />
-                                <TextBlock Text="File And Folder Tools"/>
+                                <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xE8AC;" />
+                                <TextBlock Text="Files Rename"/>
                             </StackPanel>
                         </ListBoxItem>
                         <!--WebServerPage-->

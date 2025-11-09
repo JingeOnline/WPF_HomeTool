@@ -10,7 +10,7 @@ using WPF_HomeTool.Models;
 
 namespace WPF_HomeTool.ViewModels
 {
-    public partial class FileFolderPageViewModel : ObservableObject, IFileDragDropTarget
+    public partial class FilesRenamePageViewModel : ObservableObject, IFileDragDropTarget
     {
         [ObservableProperty]
         private string _SelectedMode;
@@ -20,8 +20,10 @@ namespace WPF_HomeTool.ViewModels
         private string _FilesCount;
         [ObservableProperty]
         private string _Hint;
+        [ObservableProperty]
+        private bool _IsSaveButtonEnable=false;
 
-        public FileFolderPageViewModel()
+        public FilesRenamePageViewModel()
         {
 
         }
@@ -56,14 +58,26 @@ namespace WPF_HomeTool.ViewModels
         {
             _Files.Clear();
             FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x => x.FileInfo));
+            IsSaveButtonEnable = false;
         }
         [RelayCommand]
         private void Preview()
         {
             foreach (var item in Files)
             {
-                FileHelper.RenameMediaFileWithDate(item);
+                FileHelper.PreviewNameMediaFileWithDate(item);
             }
+            IsSaveButtonEnable = true;
+        }
+        [RelayCommand]
+        private void Save()
+        {
+            foreach(var item in Files)
+            {
+                FileHelper.RenameFile(item);
+            }
+            Hint = "保存成功";
+            IsSaveButtonEnable = false;
         }
 
         //响应页面上拖拽过来的文件或者文件夹
@@ -74,7 +88,10 @@ namespace WPF_HomeTool.ViewModels
                 FileInfo fileInfo = new FileInfo(filePath);
                 if (fileInfo.Exists)
                 {
-                    Files.Add(new FileInfoPreview(fileInfo));
+                    if (SelectedMode == "照片视频添加日期" && FileHelper.IsFilePhotoOrVideo(fileInfo))
+                    {
+                        Files.Add(new FileInfoPreview(fileInfo));
+                    }
                 }
                 else
                 {
@@ -84,16 +101,15 @@ namespace WPF_HomeTool.ViewModels
                         var FileInfoList = FileHelper.GetAllFilesRecursively(dirInfo);
                         foreach (var fileInFolder in FileInfoList)
                         {
-                            Files.Add(new FileInfoPreview(fileInFolder));
+                            if (SelectedMode == "照片视频添加日期" && FileHelper.IsFilePhotoOrVideo(fileInFolder))
+                            {
+                                Files.Add(new FileInfoPreview(fileInFolder));
+                            }
                         }
                     }
                 }
             }
             FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x=>x.FileInfo));
-            if(SelectedMode== "照片视频添加日期")
-            {
-                //TODO:筛选掉非媒体格式
-            }
         }
     }
 }

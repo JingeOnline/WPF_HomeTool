@@ -13,8 +13,6 @@ namespace WPF_HomeTool.Helpers
 {
     public class FileHelper
     {
-        private static List<string> _PhotoExts = new List<string>() { "JPG", "JPEG", "HEIC", "CR2" };
-        private static List<string> _VideoExts = new List<string>() { "MP4", "MOV" };
         /// <summary>
         /// 返回带单位的文件大小
         /// </summary>
@@ -116,10 +114,16 @@ namespace WPF_HomeTool.Helpers
 
         }
 
-        public static void RenameMediaFileWithDate(FileInfoPreview fileInfoPre)
+        /// <summary>
+        /// 对照片和视频文件生成Preview Name
+        /// </summary>
+        /// <param name="fileInfoPre"></param>
+        public static void PreviewNameMediaFileWithDate(FileInfoPreview fileInfoPre)
         {
+            List<string>? videoExts = ConfigHelper.ReadKeyValueIntoList("VideoExts");
+            List<string>? photoExts = ConfigHelper.ReadKeyValueIntoList("PhotoExts");
             ShellObject shell = ShellObject.FromParsingName(fileInfoPre.FileInfo.FullName);
-            if (_VideoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
+            if (videoExts != null && videoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
             {
                 DateTime? videoMediaCreated = shell.Properties.System.Media.DateEncoded.Value;
                 if (videoMediaCreated != null)
@@ -127,14 +131,53 @@ namespace WPF_HomeTool.Helpers
                     fileInfoPre.NamePreview = videoMediaCreated.Value.ToString("yyyy-MM-dd") + " " + fileInfoPre.FileInfo.Name;
                 }
             }
-            else if (_PhotoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
+            else if (photoExts != null && photoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
             {
                 DateTime? photoDateTaken = shell.Properties.System.Photo.DateTaken.Value;
-                if(photoDateTaken!=null)
+                if (photoDateTaken != null)
                 {
                     fileInfoPre.NamePreview = photoDateTaken.Value.ToString("yyyy-MM-dd") + " " + fileInfoPre.FileInfo.Name;
                 }
             }
+        }
+
+        /// <summary>
+        /// 检查一个文件的扩展名称是否是指定的照片或者视频格式
+        /// </summary>
+        /// <param name="fileInfo"></param>
+        /// <returns></returns>
+        public static bool IsFilePhotoOrVideo(FileInfo fileInfo)
+        {
+            List<string>? videoExts = ConfigHelper.ReadKeyValueIntoList("VideoExts");
+            List<string>? photoExts = ConfigHelper.ReadKeyValueIntoList("PhotoExts");
+            List<string>? exts = new List<string>(videoExts);
+            exts.AddRange(photoExts);
+            if (!string.IsNullOrEmpty(fileInfo.Extension))
+            {
+                return exts.Contains(fileInfo.Extension.Substring(1).ToUpper());
+            }
+            else
+            {
+                return false;
+            }
+        }
+        //public static IEnumerable<FileInfoPreview> FilterPhotoVideoOnly(IEnumerable<FileInfoPreview> fileInfoPres)
+        //{
+        //    List<string>? videoExts = ConfigHelper.ReadKeyValueIntoList("VideoExts");
+        //    List<string>? photoExts = ConfigHelper.ReadKeyValueIntoList("PhotoExts");
+        //    List<string>? exts = new List<string>(videoExts);
+        //    exts.AddRange(photoExts);
+        //    return fileInfoPres.Where(x => exts.Contains(x.FileInfo.Extension.Substring(1).ToUpper()));
+        //}
+
+        /// <summary>
+        /// 重命名文件
+        /// </summary>
+        /// <param name="fileInfoPre"></param>
+        public static void RenameFile(FileInfoPreview fileInfoPre)
+        {
+            string newPath = Path.Combine(fileInfoPre.FileInfo.DirectoryName!, fileInfoPre.NamePreview);
+            fileInfoPre.FileInfo.MoveTo(newPath);
         }
     }
 }

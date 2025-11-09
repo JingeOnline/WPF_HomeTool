@@ -19,10 +19,10 @@ namespace WPF_HomeTool.Views
     /// <summary>
     /// Interaction logic for FileFolderPage.xaml
     /// </summary>
-    public partial class FileFolderPage : Page
+    public partial class FilesRenamePage : Page
     {
-        public FileFolderPageViewModel VM { get;}
-        public FileFolderPage(FileFolderPageViewModel viewModel)
+        public FilesRenamePageViewModel VM { get;}
+        public FilesRenamePage(FilesRenamePageViewModel viewModel)
         {
             VM = viewModel;
             DataContext = this;
