@@ -21,7 +21,9 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private string _Hint;
         [ObservableProperty]
-        private bool _IsSaveButtonEnable=false;
+        private bool _IsSaveButtonEnable = false;
+        [ObservableProperty]
+        private bool _IsPreviewButtonEnable = false;
 
         public FilesRenamePageViewModel()
         {
@@ -47,7 +49,7 @@ namespace WPF_HomeTool.ViewModels
             var dialog = new Microsoft.Win32.OpenFileDialog();
             dialog.Multiselect = true;
             bool? result = dialog.ShowDialog();
-            if(result==true)
+            if (result == true)
             {
                 OnFileDrop(dialog.FileNames);
             }
@@ -59,20 +61,24 @@ namespace WPF_HomeTool.ViewModels
             _Files.Clear();
             FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x => x.FileInfo));
             IsSaveButtonEnable = false;
+            IsPreviewButtonEnable = false;
         }
         [RelayCommand]
         private void Preview()
         {
             foreach (var item in Files)
             {
-                FileHelper.PreviewNameMediaFileWithDate(item);
+                if (SelectedMode == "照片视频添加日期")
+                {
+                    FileHelper.PreviewNameMediaFileWithDate(item);
+                }
             }
             IsSaveButtonEnable = true;
         }
         [RelayCommand]
         private void Save()
         {
-            foreach(var item in Files)
+            foreach (var item in Files)
             {
                 FileHelper.RenameFile(item);
             }
@@ -92,6 +98,10 @@ namespace WPF_HomeTool.ViewModels
                     {
                         Files.Add(new FileInfoPreview(fileInfo));
                     }
+                    else if (SelectedMode != "照片视频添加日期")
+                    {
+                        Files.Add(new FileInfoPreview(fileInfo));
+                    }
                 }
                 else
                 {
@@ -105,11 +115,19 @@ namespace WPF_HomeTool.ViewModels
                             {
                                 Files.Add(new FileInfoPreview(fileInFolder));
                             }
+                            else if (SelectedMode != "照片视频添加日期")
+                            {
+                                Files.Add(new FileInfoPreview(fileInFolder));
+                            }
                         }
                     }
                 }
             }
-            FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x=>x.FileInfo));
+            FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x => x.FileInfo));
+            if (Files.Count > 0)
+            {
+                IsPreviewButtonEnable = true;
+            }
         }
     }
 }

@@ -88,7 +88,42 @@
                         </Grid>
                     </Border>
                 </Grid>
-
+                <TextBlock Text="App Settings" FontWeight="SemiBold" Margin="10" FontSize="14"/>
+                <Expander>
+                    <Expander.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="SettingsIcon" AutomationProperties.Name="Config Settings" Grid.Column="0" Width="20" Height="20"  Margin="10,5,10,5" VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Text="&#xE8FD;" FontSize="20"/>
+                            <StackPanel Grid.Column="1" Margin="12" Orientation="Vertical">
+                                <TextBlock Text="App.Config Settings" />
+                                <TextBlock Opacity="0.7" Style="{StaticResource CaptionTextBlockStyle}">修改App.Config文件，保存之后会重新载入Config文件。</TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </Expander.Header>
+                    <Expander.Content>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Menu HorizontalAlignment="Right" >
+                                <MenuItem Header="Reload" Icon="{StaticResource IconRefresh}" Command="{Binding VM.ReloadConfigCommand}"/>
+                                <MenuItem Header="Save" Icon="{StaticResource IconSave}" Command="{Binding VM.SaveConfigCommand}"/>
+                            </Menu>
+                            <DataGrid Grid.Row="1" ColumnWidth="*"
+                                      ItemsSource="{Binding VM.KeyValueCollection}"  AutoGenerateColumns="True">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGrid.Resources>
+                            </DataGrid>
+                        </Grid>
+                    </Expander.Content>
+                </Expander>
                 <TextBlock Text="About" FontWeight="SemiBold" Margin="10" FontSize="14"/>
                 <Expander AutomationProperties.Name="WPF Gallery Preview">
                     <Expander.Header>
@@ -96,21 +131,9 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-
-                            <Image
-                            Grid.Column="0"
-                            Width="20"
-                            Height="20"
-                            Margin="10,5,10,5"
-                            VerticalAlignment="Center"
-                            Source="/Resources/Images/house512.png" />
-
-                            <StackPanel
-                            Grid.Column="1"
-                            Margin="12"
-                            Orientation="Vertical">
+                            <Image Grid.Column="0" Width="20" Height="20" Margin="10,5,10,5" VerticalAlignment="Center" Source="/Resources/Images/house512.png" />
+                            <StackPanel Grid.Column="1" Margin="12" Orientation="Vertical">
                                 <TextBlock Text="WPF Gallery Preview" />
                                 <TextBlock Opacity="0.7" Style="{StaticResource CaptionTextBlockStyle}">© 2024 Microsoft. All rights reserved.</TextBlock>
                             </StackPanel>

@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TextBlock x:Key="IconAdd" Text="&#xECC8;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+    <TextBlock x:Key="IconRemove" Text="&#xECC9;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+    <TextBlock x:Key="IconClear" Text="&#xE894;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+    <TextBlock x:Key="IconPreview" Text="&#xF19D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+    <TextBlock x:Key="IconSave" Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+    <TextBlock x:Key="IconRefresh" Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
+</ResourceDictionary>

@@ -9,14 +9,6 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="FilesRenamePage">
-
-    <Page.Resources>
-        <TextBlock x:Key="IconAdd" Text="&#xECC8;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
-        <TextBlock x:Key="IconRemove" Text="&#xECC9;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
-        <TextBlock x:Key="IconClear" Text="&#xE894;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
-        <TextBlock x:Key="IconPreview" Text="&#xF19D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
-        <TextBlock x:Key="IconSave" Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" />
-    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -46,9 +38,8 @@
                 <MenuItem Header="删除" Icon="{StaticResource IconRemove}" Command="{Binding VM.RemoveFilesCommand}" CommandParameter="{Binding ElementName=DataGrid_FileInfo,Path=SelectedItems}"/>
                 <MenuItem Header="清空" Icon="{StaticResource IconClear}" Command="{Binding VM.ClearFilesCommand}"/>
                 <Separator/>
-                <MenuItem Header="预览" Icon="{StaticResource IconPreview}" Command="{Binding VM.PreviewCommand}"/>
+                <MenuItem Header="预览" Icon="{StaticResource IconPreview}" Command="{Binding VM.PreviewCommand}" IsEnabled="{Binding VM.IsPreviewButtonEnable,Mode=OneWay}"/>
                 <MenuItem Header="执行" Icon="{StaticResource IconSave}" Command="{Binding VM.SaveCommand}" IsEnabled="{Binding VM.IsSaveButtonEnable,Mode=OneWay}"/>
-                <!--<Button Content="执行"/>-->
             </Menu>
         </Border>
         <Grid Grid.Row="2" Margin="0,16,0,8"
