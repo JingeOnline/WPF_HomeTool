@@ -8,11 +8,15 @@ using WPF_HomeTool.Helpers;
 
 namespace WPF_HomeTool.Models
 {
-    public class FileInfoPreview
+    public partial class FileInfoPreview: ObservableObject
     {
-        public FileInfo FileInfo { get; set; }
-        public string NamePreview { get; set; }
-        public string SizeReadable {  get; set; }
+
+        [ObservableProperty]
+        private FileInfo _FileInfo;
+        [ObservableProperty]
+        private string _NamePreview;
+        [ObservableProperty]
+        private string _SizeReadable;
         public FileInfoPreview(FileInfo fileInfo)
         {
             this.FileInfo = fileInfo;

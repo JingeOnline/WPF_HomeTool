@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.WindowsAPICodePack.Shell;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,12 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using WPF_HomeTool.Controls;
 using WPF_HomeTool.Models;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace WPF_HomeTool.Helpers
 {
     public class FileHelper
     {
-
+        private static List<string> _PhotoExts = new List<string>() { "JPG", "JPEG", "HEIC", "CR2" };
+        private static List<string> _VideoExts = new List<string>() { "MP4", "MOV" };
         /// <summary>
         /// 返回带单位的文件大小
         /// </summary>
@@ -60,7 +63,7 @@ namespace WPF_HomeTool.Helpers
             }
             catch (UnauthorizedAccessException ex)
             {
-                ModernMessageBox.Show(dirInfo.FullName+Environment.NewLine+ex.Message,
+                ModernMessageBox.Show(dirInfo.FullName + Environment.NewLine + ex.Message,
                     "Access Denied", Controls.MessageBoxButton.OK, Controls.MessageBoxImage.Warning);
                 return new List<FileInfo>();
             }
@@ -99,8 +102,8 @@ namespace WPF_HomeTool.Helpers
                 }
             }
             IEnumerable<FileExtCountModel> fileExtCounts = from ext in exts
-                                                      group ext by ext into g
-                                                      select new FileExtCountModel(g.Key,g.Count());
+                                                           group ext by ext into g
+                                                           select new FileExtCountModel(g.Key, g.Count());
 
             StringBuilder sb = new StringBuilder();
             sb.Append($"Total: {fileInfos.Count()}");
@@ -111,6 +114,27 @@ namespace WPF_HomeTool.Helpers
             int fileCount = fileExtCounts.Sum(x => x.Count);
             return sb.ToString();
 
+        }
+
+        public static void RenameMediaFileWithDate(FileInfoPreview fileInfoPre)
+        {
+            ShellObject shell = ShellObject.FromParsingName(fileInfoPre.FileInfo.FullName);
+            if (_VideoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
+            {
+                DateTime? videoMediaCreated = shell.Properties.System.Media.DateEncoded.Value;
+                if (videoMediaCreated != null)
+                {
+                    fileInfoPre.NamePreview = videoMediaCreated.Value.ToString("yyyy-MM-dd") + " " + fileInfoPre.FileInfo.Name;
+                }
+            }
+            else if (_PhotoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
+            {
+                DateTime? photoDateTaken = shell.Properties.System.Photo.DateTaken.Value;
+                if(photoDateTaken!=null)
+                {
+                    fileInfoPre.NamePreview = photoDateTaken.Value.ToString("yyyy-MM-dd") + " " + fileInfoPre.FileInfo.Name;
+                }
+            }
         }
     }
 }

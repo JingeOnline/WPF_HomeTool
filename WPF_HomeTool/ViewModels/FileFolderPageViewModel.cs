@@ -13,6 +13,8 @@ namespace WPF_HomeTool.ViewModels
     public partial class FileFolderPageViewModel : ObservableObject, IFileDragDropTarget
     {
         [ObservableProperty]
+        private string _SelectedMode;
+        [ObservableProperty]
         private ObservableCollection<FileInfoPreview> _Files = new ObservableCollection<FileInfoPreview>();
         [ObservableProperty]
         private string _FilesCount;
@@ -55,6 +57,14 @@ namespace WPF_HomeTool.ViewModels
             _Files.Clear();
             FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x => x.FileInfo));
         }
+        [RelayCommand]
+        private void Preview()
+        {
+            foreach (var item in Files)
+            {
+                FileHelper.RenameMediaFileWithDate(item);
+            }
+        }
 
         //响应页面上拖拽过来的文件或者文件夹
         public void OnFileDrop(string[] paths)
@@ -80,6 +90,10 @@ namespace WPF_HomeTool.ViewModels
                 }
             }
             FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x=>x.FileInfo));
+            if(SelectedMode== "照片视频添加日期")
+            {
+                //TODO:筛选掉非媒体格式
+            }
         }
     }
 }

@@ -35,7 +35,8 @@
                 CornerRadius="{DynamicResource ControlCornerRadius}">
                 <!--Padding="{StaticResource ExpanderPadding}"--> 
             <Menu >
-                <ComboBox Width="200" Margin="0" Padding="0">
+                <ComboBox Width="200" Margin="0" Padding="0" SelectedValuePath="Content"
+                          SelectedValue="{Binding VM.SelectedMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <ComboBoxItem Content="照片视频添加日期" IsSelected="True"/>
                     <ComboBoxItem Content="文件移动"/>
                     <ComboBoxItem Content="文件压缩"/>
@@ -45,7 +46,7 @@
                 <MenuItem Header="删除" Icon="{StaticResource IconRemove}" Command="{Binding VM.RemoveFilesCommand}" CommandParameter="{Binding ElementName=DataGrid_FileInfo,Path=SelectedItems}"/>
                 <MenuItem Header="清空" Icon="{StaticResource IconClear}" Command="{Binding VM.ClearFilesCommand}"/>
                 <Separator/>
-                <MenuItem Header="预览" Icon="{StaticResource IconPreview}"/>
+                <MenuItem Header="预览" Icon="{StaticResource IconPreview}" Command="{Binding VM.PreviewCommand}"/>
                 <MenuItem Header="执行" Icon="{StaticResource IconSave}"/>
                 <!--<Button Content="执行"/>-->
             </Menu>
