@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,11 +11,17 @@ namespace WPF_HomeTool.Services
 {
     internal class SyncConfigFileService : BackgroundService
     {
+        private readonly ILogger _logger;
+
+        public SyncConfigFileService(ILogger<SyncConfigFileService> logger)
+        {
+            _logger = logger;
+        }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
-                await Task.Run(async () =>
+                await Task.Run(() =>
                 {
                     //必须传入CancellationToken才能在App.xaml.cs中停止时，触发取消任务。否则任务不能被终止。
                     //await Task.Delay(10000,stoppingToken);
@@ -28,16 +35,18 @@ namespace WPF_HomeTool.Services
                             string targetFolderPath = Path.Combine(OneDrivePath, subPath);
                             if (Directory.Exists(targetFolderPath))
                             {
-                                //获取当前应用程序exe文件所在的目录
-                                string exePath = System.Environment.ProcessPath!;
-                                //获取文件夹路径
-                                string? exeDirectory = Path.GetDirectoryName(exePath);
-                                Debug.WriteLine($"Current exe path: {exePath}");
-                                //组合配置文件的完整路径
-                                string sourceFilePath = Path.Combine(exeDirectory, "App.config");
+                                ////获取当前应用程序exe文件所在的目录
+                                //string exePath = System.Environment.ProcessPath!;
+                                ////获取文件夹路径
+                                //string? exeDirectory = Path.GetDirectoryName(exePath);
+                                //Debug.WriteLine($"Current exe path: {exePath}");
+                                ////组合配置文件的完整路径
+                                //string sourceFilePath = Path.Combine(exeDirectory, "App.config");
+
+                                string configFilePath = ConfigHelper.GetConigFilePath();
                                 //将配置文件复制到OneDrive指定文件
                                 string destFilePath = Path.Combine(targetFolderPath, "App.config");
-                                File.Copy(sourceFilePath, destFilePath, true);
+                                File.Copy(configFilePath, destFilePath, true);
                             }
                         }
                     }
@@ -45,11 +54,13 @@ namespace WPF_HomeTool.Services
             }
             catch (TaskCanceledException)
             {
-                Debug.WriteLine("同步Config被取消");
+                //Debug.WriteLine("同步Config被取消");
+                _logger.LogInformation("向OneDrive中同步Config文件被取消");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"同步Config发生异常: {ex.Message}");
+                _logger.LogError(ex,"向OneDrive中同步Config文件出现异常");
+                //Debug.WriteLine($"同步Config发生异常: {ex.Message}");
             }
         }
     }

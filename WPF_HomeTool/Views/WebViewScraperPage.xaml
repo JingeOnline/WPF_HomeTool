@@ -1,0 +1,71 @@
+﻿<Page x:Class="WPF_HomeTool.Views.WebViewScraperPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WPF_HomeTool.Views"
+      xmlns:controls="clr-namespace:WPF_HomeTool.Controls"
+      xmlns:models="clr-namespace:WPF_HomeTool.Models"
+      xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="WebViewScraperPage">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <controls:PageHeader
+            Grid.Row="0"
+            Title="WebView Scraper"
+            Description="基于WebView2的网页爬虫工具" Visibility="{Binding VM.HeaderVisibility}"/>
+        <Border Grid.Row="1" Style="{StaticResource MenuBorder}" Visibility="{Binding VM.HeaderVisibility}">
+            <Menu >
+                <ComboBox Width="140" Margin="0" Padding="0" SelectedValuePath="Content"
+                          SelectedValue="{Binding VM.SelectedMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <ComboBoxItem Content="ImageFap" IsSelected="True"/>
+                    <ComboBoxItem Content="Other1"/>
+                    <ComboBoxItem Content="Other2"/>
+                </ComboBox>
+                <Separator/>
+                <TextBox Width="300" VerticalContentAlignment="Center"/>
+                <MenuItem Header="添加" Icon="{StaticResource IconAdd}" />
+                <MenuItem Header="删除" Icon="{StaticResource IconRemove}" />
+                <MenuItem Header="清空" Icon="{StaticResource IconClear}" />
+                <Separator/>
+                <MenuItem Header="开始" Icon="{StaticResource IconDownload}"/>
+            </Menu>
+        </Border>
+        <DataGrid Grid.Row="2" Margin="0,8,0,8" Visibility="{Binding VM.HeaderVisibility}">
+
+        </DataGrid>
+        <Border Grid.Row="3" Style="{StaticResource MenuBorder}" Padding="0,8,0,0">
+            <Grid>
+                <TabControl x:Name="WebPageTabControl" ItemsSource="{Binding VM.WebPageTabModels}">
+                    <TabControl.ContentTemplate>
+                        <DataTemplate DataType="{x:Type wv2:WebView2}">
+                            <wv2:WebView2 Source="{Binding Source}"/>
+                        </DataTemplate>
+                    </TabControl.ContentTemplate>
+                    <TabControl.ItemTemplate>
+                        <DataTemplate DataType="models:WebPageTabModel">
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </TabControl.ItemTemplate>
+                </TabControl>
+                <Button x:Name="WebTabExpandButton" Background="Transparent" BorderBrush="Transparent" 
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Command="{Binding VM.WebTabExpandCommand}">
+                    <TextBlock Text="&#xE93A;" Style="{StaticResource IconTextBlockStyle}"/>
+                </Button>
+            </Grid>
+
+            
+        </Border>
+
+    </Grid>
+</Page>

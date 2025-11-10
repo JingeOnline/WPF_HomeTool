@@ -20,12 +20,7 @@
             Grid.Row="0"
             Title="Files Rename"
             Description="文件重命名工具集"/>
-        <Border Grid.Row="1" 
-                Background="{DynamicResource ExpanderHeaderBackground}" 
-                BorderBrush="{DynamicResource ExpanderHeaderBorderBrush}" 
-                BorderThickness="{StaticResource ExpanderBorderThemeThickness}" 
-                CornerRadius="{DynamicResource ControlCornerRadius}">
-                <!--Padding="{StaticResource ExpanderPadding}"--> 
+        <Border Grid.Row="1" Style="{StaticResource MenuBorder}">
             <Menu >
                 <ComboBox Width="200" Margin="0" Padding="0" SelectedValuePath="Content"
                           SelectedValue="{Binding VM.SelectedMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">

@@ -12,21 +12,26 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WPF_HomeTool.ViewModels;
 
-namespace WPF_HomeTool.Controls
+namespace WPF_HomeTool.Views
 {
     /// <summary>
-    /// Interaction logic for PageHeader.xaml
+    /// Interaction logic for WebViewScraperPage.xaml
     /// </summary>
-    public partial class PageHeader : UserControl
+    public partial class WebViewScraperPage : Page
     {
-        public string? Title { get; set; }
-        public string? Description { get; set; }
-        public bool ShowDescription { get; set; } = true;
-        public PageHeader()
+        public WebViewScraperPageViewModel VM { get; }
+        public WebViewScraperPage(WebViewScraperPageViewModel vm)
         {
+            VM = vm;
+            DataContext = this;
             InitializeComponent();
-            DataContext= this;
+        }
+
+        private void WebTabExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

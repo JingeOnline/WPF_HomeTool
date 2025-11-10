@@ -6,4 +6,5 @@
     <TextBlock x:Key="IconPreview" Text="&#xF19D;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
     <TextBlock x:Key="IconSave" Text="&#xE74E;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
     <TextBlock x:Key="IconRefresh" Text="&#xE72C;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    <TextBlock x:Key="IconDownload" Text="&#xE896;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
 </ResourceDictionary>

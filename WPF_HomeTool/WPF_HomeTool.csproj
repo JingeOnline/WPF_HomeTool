@@ -29,6 +29,7 @@
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3595.46" />
     <PackageReference Include="NLog" Version="6.0.6" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.0.6" />
     <PackageReference Include="WPF-UI" Version="4.0.3" />

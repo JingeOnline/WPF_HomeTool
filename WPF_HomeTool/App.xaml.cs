@@ -1,7 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
-using WPF_HomeTool.Navigation;
 using WPF_HomeTool.Services;
 using WPF_HomeTool.ViewModels;
 using WPF_HomeTool.Views;
@@ -49,6 +48,8 @@ namespace WPF_HomeTool
                 services.AddSingleton<SettingsPageViewModel>();
                 services.AddSingleton<FilesRenamePage>();
                 services.AddSingleton<FilesRenamePageViewModel>();
+                services.AddSingleton<WebViewScraperPage>();
+                services.AddSingleton<WebViewScraperPageViewModel>();
 
                 services.AddHostedService<SyncConfigFileService>();
                 //添加Nlog服务

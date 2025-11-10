@@ -12,6 +12,11 @@ namespace WPF_HomeTool.Helpers
     public class ConfigHelper
     {
         public static Configuration cfa = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+        public static string GetConigFilePath()
+        {
+            return cfa.FilePath;
+        }
         public static void CreatKeyValue(string key, string value)
         {
             cfa.AppSettings.Settings.Add(key, value);

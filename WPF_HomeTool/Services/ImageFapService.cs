@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WPF_HomeTool.Services
 {
-    public class ImageFapFileService
+    public class ImageFapService
     {
 
     }

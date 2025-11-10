@@ -121,11 +121,18 @@
                                 <TextBlock Text="Home"/>
                             </StackPanel>
                         </ListBoxItem>
-                        <!--FileFolderPage-->
+                        <!--FileRenamePage-->
                         <ListBoxItem Tag="WPF_HomeTool.Views.FilesRenamePage" >
                             <StackPanel Orientation="Horizontal"  >
                                 <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xE8AC;" />
                                 <TextBlock Text="Files Rename"/>
+                            </StackPanel>
+                        </ListBoxItem>
+                        <!--WebViewScraperPage-->
+                        <ListBoxItem Tag="WPF_HomeTool.Views.WebViewScraperPage" >
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xF6FA;" />
+                                <TextBlock Text="WebView Scraper"/>
                             </StackPanel>
                         </ListBoxItem>
                         <!--WebServerPage-->

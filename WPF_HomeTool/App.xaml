@@ -6,7 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!--<ResourceDictionary Source="Styles/MainWindowStyle.xaml" />-->
+                <ResourceDictionary Source="Styles/CommonStyle.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlockIcons.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml" />
             </ResourceDictionary.MergedDictionaries>
