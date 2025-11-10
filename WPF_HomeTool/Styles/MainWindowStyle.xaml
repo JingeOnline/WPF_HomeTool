@@ -134,6 +134,12 @@
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,4,0,4"/>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}">
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
     </Style>
     <!--汉堡菜单文本字体样式定义-->
     <Style x:Key="HamburgerMenuLabelTextBlockStyle" TargetType="TextBlock">
@@ -142,4 +148,7 @@
         <Setter Property="Margin" Value="12,0,0,0"/>
         <Setter Property="Visibility" Value="Visible"/>
     </Style>
+    <!--用于窗口标题栏上的按钮，不知道是如何起作用的-->
+    <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
+    <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="Transparent" />
 </ResourceDictionary>

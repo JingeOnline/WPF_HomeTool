@@ -11,9 +11,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
+//using System.Windows.Shapes;
 using System.Windows.Shell;
 using System.Runtime.CompilerServices;
+using System.IO;
 
 namespace WPF_HomeTool
 {
@@ -139,6 +140,15 @@ namespace WPF_HomeTool
                 this.Hide();
                 TrayIcon.Visibility = Visibility.Visible;//显示托盘
             }
+        }
+
+        private void OpenAppLocationButton_Click(object sender, RoutedEventArgs e)
+        {
+            //获取当前应用程序exe文件所在的目录
+            string exePath = System.Environment.ProcessPath!;
+            //获取文件夹路径
+            string? exeDirectory = Path.GetDirectoryName(exePath);
+            Process.Start("explorer.exe", exeDirectory!);
         }
     }
 }

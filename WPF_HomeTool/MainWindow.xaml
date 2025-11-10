@@ -18,10 +18,15 @@
         Closing="Window_Closing"
     >
     <Window.Resources>
-        <converters:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter" />
-        <Style TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/MainWindowStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter" />
+            <Style TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe UI"/>
+            </Style>
+        </ResourceDictionary>
     </Window.Resources>
     <Border x:Name="HighContrastBorder" BorderBrush="Transparent" BorderThickness="8 1 8 8">
         <Grid x:Name="MainGrid">
@@ -37,53 +42,27 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <!--返回按钮-->
-                <Button
-                    x:Name="BackButton"
-                    Grid.Column="0"
-                    Height="32"
-                    Width="40"
-                    Margin="4,0"
-                    VerticalAlignment="Center"
-                    AutomationProperties.Name="Back"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Click="BackButton_Click"
-                    WindowChrome.IsHitTestVisibleInChrome="True"
-                    ToolTipService.ToolTip="Back">
-                    <Button.Resources>
-                        <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
-                        <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="Transparent" />
-                    </Button.Resources>
-                    <TextBlock Text="&#xE72B;">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource HamburgerMenuIconTextBlockStyle}">
-                                <Style.Triggers>
-                                    <Trigger Property="IsEnabled" Value="False">
-                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}">
-                                        </Setter>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                <Button x:Name="BackButton" Grid.Column="0"  Height="32" Width="40" Margin="4,0" ToolTipService.ToolTip="Back"
+                    VerticalAlignment="Center" AutomationProperties.Name="Back" Background="Transparent"
+                    BorderBrush="Transparent" Click="BackButton_Click" WindowChrome.IsHitTestVisibleInChrome="True">
+                    <TextBlock Text="&#xE72B;" Style="{StaticResource HamburgerMenuIconTextBlockStyle}"/>
                 </Button>
                 <!--窗口的图标和文字-->
-                <StackPanel
-                    Grid.Column="1"
-                    Margin="4,0,0,0"
-                    Orientation="Horizontal">
-                    <Image
-                        Width="20"
-                        VerticalAlignment="Center"
-                        Source="/Resources/Images/house128.png" />
-                    <TextBlock
-                        Margin="16,0,0,0"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        AutomationProperties.HeadingLevel="Level1"
-                        Text="Daily WPF Helper" />
+                <StackPanel Grid.Column="1" Margin="4,0,0,0" Orientation="Horizontal">
+                    <Image Width="20" VerticalAlignment="Center" Source="/Resources/Images/house128.png" />
+                    <TextBlock Margin="16,0,0,0" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"
+                                AutomationProperties.HeadingLevel="Level1" Text="Daily WPF Helper" />
+                </StackPanel>
+                <!--标题栏右侧按钮-->
+                <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,0,140,0">
+                    <Button WindowChrome.IsHitTestVisibleInChrome="True" ToolTipService.ToolTip="Open App Location"
+                            Background="Transparent" BorderBrush="Transparent"
+                            x:Name="OpenAppLocationButton" Click="OpenAppLocationButton_Click">
+                        <TextBlock Text="&#xEC50;" Style="{StaticResource HamburgerMenuIconTextBlockStyle}"/>
+                    </Button>
                 </StackPanel>
             </Grid>
             <!--导航栏+主体内容-->
@@ -189,7 +168,7 @@
                     CornerRadius="8,0,0,0">
                     <Frame x:Name="RootContentFrame" Navigated="RootContentFrame_Navigated" 
                            NavigationUIVisibility="Hidden" />
-                           <!--MouseDown="Window_MouseDown"--> 
+                    <!--MouseDown="Window_MouseDown"-->
                 </Border>
             </Grid>
             <!--任务栏托盘图标，使用开源项目 https://github.com/HavenDV/H.NotifyIcon-->

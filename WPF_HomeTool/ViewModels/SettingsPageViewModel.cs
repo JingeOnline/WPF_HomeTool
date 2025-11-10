@@ -10,11 +10,6 @@ namespace WPF_HomeTool.ViewModels
 {
     public partial class SettingsPageViewModel : ObservableObject
     {
-        //[ObservableProperty]
-        //private string _pageTitle = "Settings 1234";
-
-        //[ObservableProperty]
-        //private string _pageDescription = "Settings 1234567890";
 
         [ObservableProperty]
         private ObservableCollection<KeyValueModel> keyValueCollection;
