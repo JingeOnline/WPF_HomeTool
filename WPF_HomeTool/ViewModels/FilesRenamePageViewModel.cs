@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,7 @@ namespace WPF_HomeTool.ViewModels
 {
     public partial class FilesRenamePageViewModel : ObservableObject, IFileDragDropTarget
     {
+        private readonly ILogger<FilesRenamePageViewModel> _logger;
         [ObservableProperty]
         private string _SelectedMode;
         [ObservableProperty]
@@ -25,9 +27,9 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private bool _IsPreviewButtonEnable = false;
 
-        public FilesRenamePageViewModel()
+        public FilesRenamePageViewModel(ILogger<FilesRenamePageViewModel> logger)
         {
-
+            _logger = logger;
         }
 
         [RelayCommand]
@@ -66,14 +68,21 @@ namespace WPF_HomeTool.ViewModels
         [RelayCommand]
         private void Preview()
         {
-            foreach (var item in Files)
+            try
             {
-                if (SelectedMode == "照片视频添加日期")
+                foreach (var item in Files)
                 {
-                    FileHelper.PreviewNameMediaFileWithDate(item);
+                    if (SelectedMode == "照片视频添加日期")
+                    {
+                        FileHelper.PreviewNameMediaFileWithDate(item);
+                    }
                 }
+                IsSaveButtonEnable = true;
             }
-            IsSaveButtonEnable = true;
+            catch(Exception ex)
+            {
+                _logger.LogError(ex,"文件重命名预览出现异常");
+            }
         }
         [RelayCommand]
         private void Save()

@@ -7,6 +7,8 @@ using WPF_HomeTool.ViewModels;
 using WPF_HomeTool.Views;
 using WPF_HomeTool.Controls;
 using WPF_HomeTool.Helpers;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 
 
 namespace WPF_HomeTool
@@ -16,13 +18,16 @@ namespace WPF_HomeTool
     /// </summary>
     public partial class App : Application
     {
+        private NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+
         //添加Web Api服务，想要添加必须在project中添加 <FrameworkReference Include="Microsoft.AspNetCore.App" />
         private static readonly IHost _webHost = Host.CreateDefaultBuilder().ConfigureWebHostDefaults(
             webBuilder =>
             {
                 webBuilder.UseStartup<WebServerStartup>();
-                string port=ConfigHelper.ReadKeyValue("ApiPort")!;
-                webBuilder.UseUrls("http://*:"+port);
+                string port = ConfigHelper.ReadKeyValue("ApiPort")!;
+                webBuilder.UseUrls("http://*:" + port);
             }).Build();
         //如果需要指定web api的配置文件，则使用下面的代码
         //.ConfigureAppConfiguration((hostingContext, config) => {
@@ -31,22 +36,28 @@ namespace WPF_HomeTool
         //}).Build();
 
         private static readonly IHost _host = Host.CreateDefaultBuilder()
-        .ConfigureServices((context, services) =>
-        {
-            services.AddSingleton<WPF_HomeTool.Navigation.INavigationService, WPF_HomeTool.Navigation.NavigationService>();
-            services.AddSingleton<MainWindow>();
-            services.AddSingleton<MainWindowViewModel>();
-            services.AddSingleton<WebServerPage>();
-            services.AddSingleton<WebServerPageViewModel>();
-            services.AddSingleton<HomePage>();
-            services.AddSingleton<HomePageViewModel>();
-            services.AddSingleton<SettingsPage>();
-            services.AddSingleton<SettingsPageViewModel>();
-            services.AddSingleton<FilesRenamePage>();
-            services.AddSingleton<FilesRenamePageViewModel>();
+            .ConfigureServices((context, services) =>
+            {
+                services.AddSingleton<WPF_HomeTool.Navigation.INavigationService, WPF_HomeTool.Navigation.NavigationService>();
+                services.AddSingleton<MainWindow>();
+                services.AddSingleton<MainWindowViewModel>();
+                services.AddSingleton<WebServerPage>();
+                services.AddSingleton<WebServerPageViewModel>();
+                services.AddSingleton<HomePage>();
+                services.AddSingleton<HomePageViewModel>();
+                services.AddSingleton<SettingsPage>();
+                services.AddSingleton<SettingsPageViewModel>();
+                services.AddSingleton<FilesRenamePage>();
+                services.AddSingleton<FilesRenamePageViewModel>();
 
-            services.AddHostedService<SyncConfigFileService>();
-        }).Build();
+                services.AddHostedService<SyncConfigFileService>();
+                //添加Nlog服务
+                //注意创建nlog.config文件后，其Build Action必须保留None，并选择始终复制。
+                services.AddLogging(loggingBuilder => {
+                    loggingBuilder.ClearProviders();
+                    loggingBuilder.AddNLog();
+                });
+            }).Build();
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -86,6 +97,11 @@ namespace WPF_HomeTool
             }).ConfigureAwait(false);
         }
 
+
+        void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            logger.Error(e.Exception,"程序异常退出");
+        }
     }
 
 }

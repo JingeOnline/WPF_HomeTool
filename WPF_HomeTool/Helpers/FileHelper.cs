@@ -1,4 +1,5 @@
-﻿using Microsoft.WindowsAPICodePack.Shell;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAPICodePack.Shell;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,12 +8,15 @@ using System.Text;
 using System.Threading.Tasks;
 using WPF_HomeTool.Controls;
 using WPF_HomeTool.Models;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
+using NLog.Extensions.Logging;
+//using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace WPF_HomeTool.Helpers
 {
     public class FileHelper
     {
+        private static readonly ILogger<FileHelper> _logger = LoggerFactory.Create(builder => builder.AddNLog()).CreateLogger<FileHelper>();
+
         /// <summary>
         /// 返回带单位的文件大小
         /// </summary>
@@ -75,6 +79,7 @@ namespace WPF_HomeTool.Helpers
             {
                 ModernMessageBox.Show(dirInfo.FullName + Environment.NewLine + ex.Message,
                         "Error In GetAllFilesRecursively", Controls.MessageBoxButton.OK, Controls.MessageBoxImage.Warning);
+                _logger.LogError(ex, "递归获取文件夹下的所有文件发生异常");
                 return new List<FileInfo>();
             }
         }
@@ -120,24 +125,31 @@ namespace WPF_HomeTool.Helpers
         /// <param name="fileInfoPre"></param>
         public static void PreviewNameMediaFileWithDate(FileInfoPreview fileInfoPre)
         {
-            List<string>? videoExts = ConfigHelper.ReadKeyValueIntoList("VideoExts");
-            List<string>? photoExts = ConfigHelper.ReadKeyValueIntoList("PhotoExts");
-            ShellObject shell = ShellObject.FromParsingName(fileInfoPre.FileInfo.FullName);
-            if (videoExts != null && videoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
+            try
             {
-                DateTime? videoMediaCreated = shell.Properties.System.Media.DateEncoded.Value;
-                if (videoMediaCreated != null)
+                List<string>? videoExts = ConfigHelper.ReadKeyValueIntoList("VideoExts");
+                List<string>? photoExts = ConfigHelper.ReadKeyValueIntoList("PhotoExts");
+                ShellObject shell = ShellObject.FromParsingName(fileInfoPre.FileInfo.FullName);
+                if (videoExts != null && videoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
                 {
-                    fileInfoPre.NamePreview = videoMediaCreated.Value.ToString("yyyy-MM-dd") + " " + fileInfoPre.FileInfo.Name;
+                    DateTime? videoMediaCreated = shell.Properties.System.Media.DateEncoded.Value;
+                    if (videoMediaCreated != null)
+                    {
+                        fileInfoPre.NamePreview = videoMediaCreated.Value.ToString("yyyy-MM-dd") + " " + fileInfoPre.FileInfo.Name;
+                    }
+                }
+                else if (photoExts != null && photoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
+                {
+                    DateTime? photoDateTaken = shell.Properties.System.Photo.DateTaken.Value;
+                    if (photoDateTaken != null)
+                    {
+                        fileInfoPre.NamePreview = photoDateTaken.Value.ToString("yyyy-MM-dd") + " " + fileInfoPre.FileInfo.Name;
+                    }
                 }
             }
-            else if (photoExts != null && photoExts.Contains(fileInfoPre.FileInfo.Extension.Substring(1).ToUpper()))
+            catch (Exception ex)
             {
-                DateTime? photoDateTaken = shell.Properties.System.Photo.DateTaken.Value;
-                if (photoDateTaken != null)
-                {
-                    fileInfoPre.NamePreview = photoDateTaken.Value.ToString("yyyy-MM-dd") + " " + fileInfoPre.FileInfo.Name;
-                }
+                _logger.LogError(ex,"对媒体文件提取日期信息时发生异常");
             }
         }
 
@@ -161,14 +173,6 @@ namespace WPF_HomeTool.Helpers
                 return false;
             }
         }
-        //public static IEnumerable<FileInfoPreview> FilterPhotoVideoOnly(IEnumerable<FileInfoPreview> fileInfoPres)
-        //{
-        //    List<string>? videoExts = ConfigHelper.ReadKeyValueIntoList("VideoExts");
-        //    List<string>? photoExts = ConfigHelper.ReadKeyValueIntoList("PhotoExts");
-        //    List<string>? exts = new List<string>(videoExts);
-        //    exts.AddRange(photoExts);
-        //    return fileInfoPres.Where(x => exts.Contains(x.FileInfo.Extension.Substring(1).ToUpper()));
-        //}
 
         /// <summary>
         /// 重命名文件
@@ -176,8 +180,30 @@ namespace WPF_HomeTool.Helpers
         /// <param name="fileInfoPre"></param>
         public static void RenameFile(FileInfoPreview fileInfoPre)
         {
-            string newPath = Path.Combine(fileInfoPre.FileInfo.DirectoryName!, fileInfoPre.NamePreview);
-            fileInfoPre.FileInfo.MoveTo(newPath);
+            try
+            {
+                string newPath = Path.Combine(fileInfoPre.FileInfo.DirectoryName!, fileInfoPre.NamePreview);
+                fileInfoPre.FileInfo.MoveTo(newPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,"重命名文件时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 替换文件名中不符合Windows规范的字符
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static string ReplaceWindowsReservedChar(string fileName)
+        {
+            Char[] unSafeChars = { '*', ':', '\\', '/', '|', '\"', '|', '?', '<', '>' };
+            foreach (char c in unSafeChars)
+            {
+                fileName = fileName.Replace(c, '_');
+            }
+            return fileName;
         }
     }
 }
