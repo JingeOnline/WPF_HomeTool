@@ -28,10 +28,5 @@ namespace WPF_HomeTool.Views
             DataContext = this;
             InitializeComponent();
         }
-
-        private void WebTabExpandButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }

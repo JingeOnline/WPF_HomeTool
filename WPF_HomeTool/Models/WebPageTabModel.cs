@@ -1,4 +1,4 @@
-﻿using Microsoft.Web.WebView2.WinForms;
+﻿using Microsoft.Web.WebView2.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,23 +7,25 @@ using System.Threading.Tasks;
 
 namespace WPF_HomeTool.Models
 {
-    public class WebPageTabModel
+    public partial class WebPageTabModel:ObservableObject
     {
-        //public string Name { get; set; }
-        //public WebView2 WebView { get; set; }
-        //public WebPageTabModel(string name,Uri uri)
-        //{
-        //    Name = name;
-        //    WebView = new WebView2();
-        //    WebView.Source = uri;
-        //}
-        public string Name { get; set; }
-        public Uri Source { get; set; }
-
+        [ObservableProperty]
+        private string _Name;
+        [ObservableProperty]
+        private WebView2 _WebView;
         public WebPageTabModel(string name, Uri uri)
         {
             Name = name;
-            Source = uri;
+            WebView = new WebView2();
+            WebView.Source = uri;
+            Debug.WriteLine("Initial "+uri);
+            //InitializeWebView(uri);
         }
+        //private async void InitializeWebView(Uri uri)
+        //{
+        //    await WebView.EnsureCoreWebView2Async();
+        //    WebView.Source = uri;
+        //}
+
     }
 }

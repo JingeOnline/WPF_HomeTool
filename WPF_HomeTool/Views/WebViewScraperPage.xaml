@@ -19,10 +19,9 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        <controls:PageHeader
-            Grid.Row="0"
-            Title="WebView Scraper"
-            Description="基于WebView2的网页爬虫工具" Visibility="{Binding VM.HeaderVisibility}"/>
+        <Grid Visibility="{Binding VM.HeaderVisibility}">
+            <controls:PageHeader Grid.Row="0" Title="WebView Scraper" Description="基于WebView2的网页爬虫工具" />
+        </Grid>
         <Border Grid.Row="1" Style="{StaticResource MenuBorder}" Visibility="{Binding VM.HeaderVisibility}">
             <Menu >
                 <ComboBox Width="140" Margin="0" Padding="0" SelectedValuePath="Content"
@@ -47,8 +46,16 @@
             <Grid>
                 <TabControl x:Name="WebPageTabControl" ItemsSource="{Binding VM.WebPageTabModels}">
                     <TabControl.ContentTemplate>
-                        <DataTemplate DataType="{x:Type wv2:WebView2}">
-                            <wv2:WebView2 Source="{Binding Source}"/>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding WebView,Mode=TwoWay}"/>
+                            <!--如果使用绑定Source的方法，切换Tab页面后总是重置到默认的首页-->
+                            <!--<ContentControl Content="{Binding}">
+                                <ContentControl.ContentTemplate>
+                                    <DataTemplate>
+                                        <wv2:WebView2 Source="{Binding Source}"/>
+                                    </DataTemplate>
+                                </ContentControl.ContentTemplate>
+                            </ContentControl>-->
                         </DataTemplate>
                     </TabControl.ContentTemplate>
                     <TabControl.ItemTemplate>
