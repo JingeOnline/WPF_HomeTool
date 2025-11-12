@@ -28,5 +28,23 @@ namespace WPF_HomeTool.Views
             DataContext = this;
             InitializeComponent();
         }
+
+        private async void StartMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            VM.StartTabControlScraper();
+            await Task.Delay(1000);
+            foreach (var item in WebPageTabControl.Items)
+            {
+                WebPageTabControl.SelectedItem = item;
+                await Task.Delay(1000);
+            }
+            WebPageTabControl.SelectedIndex = 0;
+            //await Task.Delay(1000);
+            //WebPageTabControl.SelectedIndex= 0;
+            //await Task.Delay(1000);
+            //WebPageTabControl.SelectedIndex = 1;
+            //await Task.Delay(1000);
+            //WebPageTabControl.SelectedIndex = 0;
+        }
     }
 }

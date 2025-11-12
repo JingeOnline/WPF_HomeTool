@@ -15,7 +15,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="{Binding VM.DataGridLength}"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
@@ -36,7 +36,7 @@
                 <MenuItem Header="删除" Icon="{StaticResource IconRemove}" />
                 <MenuItem Header="清空" Icon="{StaticResource IconClear}" />
                 <Separator/>
-                <MenuItem Header="开始" Icon="{StaticResource IconDownload}"/>
+                <MenuItem x:Name="StartMenuItem" Header="开始" Icon="{StaticResource IconDownload}" Click="StartMenuItem_Click"/>
             </Menu>
         </Border>
         <DataGrid Grid.Row="2" Margin="0,8,0,8" Visibility="{Binding VM.HeaderVisibility}">
