@@ -16,6 +16,9 @@ namespace WPF_HomeTool.Models
         private WebView2 _WebView;
         [ObservableProperty]
         private bool _IsNavigateComplete = false;
+
+        public WebImageModel WebImageModel { get; set; }
+
         public WebPageTabModel(string name)
         {
             Name = name;

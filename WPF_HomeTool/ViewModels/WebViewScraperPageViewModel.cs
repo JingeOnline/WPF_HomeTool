@@ -9,8 +9,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Media3D;
 using WPF_HomeTool.Helpers;
 using WPF_HomeTool.Models;
+using WPF_HomeTool.Services;
 using static System.Net.WebRequestMethods;
 using Visibility = System.Windows.Visibility;
 
@@ -18,6 +20,8 @@ namespace WPF_HomeTool.ViewModels
 {
     public partial class WebViewScraperPageViewModel : ObservableObject
     {
+
+        public event Action OnTabImageStarted;
         private readonly ILogger<WebViewScraperPageViewModel> _logger;
 
         [ObservableProperty]
@@ -31,6 +35,7 @@ namespace WPF_HomeTool.ViewModels
 
         private List<string> urls = new List<string>()
         {
+            //只支持这种格式的页面
             "https://www.imagefap.com/photo/1187634730/?pgid=&gid=9068759&page=0",
             "https://www.imagefap.com/photo/1184537525/?pgid=&gid=9068759&page=0",
             "https://www.imagefap.com/photo/1152220050/?pgid=&gid=9068759&page=0",
@@ -39,6 +44,7 @@ namespace WPF_HomeTool.ViewModels
             "https://www.imagefap.com/photo/1091188060/?pgid=&gid=9068759&page=0",
             "https://www.imagefap.com/photo/553653526/?pgid=&gid=9068759&page=0",
             "https://www.imagefap.com/photo/611135218/?pgid=&gid=9068759&page=0",
+            //这种格式的页面暂不支持，NavigationCompleted事件无法触发
             //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#0",
             //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#1",
             //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#2",
@@ -49,35 +55,15 @@ namespace WPF_HomeTool.ViewModels
             //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#7",
             //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#8",
             //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#9",
-            //"https://www.imagefap.com/photo/1264451856/?pgid=&gid=13612474&page=0",
-            //"https://www.imagefap.com/photo/230603319/?pgid=&gid=13612474&page=0",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0",
-            //"https://www.imagefap.com/photo/241832992/?pgid=&gid=13612474&page=0"
-            //"https://www.google.com",
-            //"https://www.youtube.com",
-            //"https://www.bing.com",
-            //"https://www.baidu.com",
-            //"https://www.github.com",
-            //"https://www.stackoverflow.com",
-            //"https://www.reddit.com",
-            //"https://www.wikipedia.org",
-            //"https://www.twitter.com",
-            //"https://www.facebook.com",
-            //"https://www.imagefap.com/photo/618948872/?pgid=&gid=13610427&page=0",
-            //"https://www.imagefap.com/photo/618948872/?pgid=&gid=13610427&page=0#1",
-            //"https://www.imagefap.com/photo/618948872/?pgid=&gid=13610427&page=0#2",
-            //"https://www.imagefap.com/photo/618948872/?pgid=&gid=13610427&page=0#3",
-            //"https://www.imagefap.com/photo/618948872/?pgid=&gid=13610427&page=0#4",
-            //"https://www.imagefap.com/photo/618948872/?pgid=&gid=13610427&page=0#5",
-            //"https://www.imagefap.com/photo/618948872/?pgid=&gid=13610427&page=0#6",
         };
 
-        private Queue<string> urlsQueue;
+        //private Queue<string> urlsQueue;
 
         public WebViewScraperPageViewModel(ILogger<WebViewScraperPageViewModel> logger)
         {
-            urlsQueue = new Queue<string>(urls);
-            UnCompletedCount = urlsQueue.Count;
+
+            //urlsQueue = new Queue<string>(urls);
+            //UnCompletedCount = urlsQueue.Count;
         }
 
         [RelayCommand]
@@ -97,6 +83,13 @@ namespace WPF_HomeTool.ViewModels
 
         public async Task StartTabControlScraper()
         {
+            ImageFapService imageFapService = new ImageFapService();
+            List<WebImageModel> webImageModels = await imageFapService.GetImagePageUrlFromAlbumPage(
+                "https://www.imagefap.com/pictures/7132227/Maria");
+            Queue<WebImageModel> webImageModelsQueue = new Queue<WebImageModel>(webImageModels);
+            UnCompletedCount = webImageModelsQueue.Count;
+            OnTabImageStarted?.Invoke();
+
             WebPageTabModels = new ObservableCollection<WebPageTabModel>()
             {
                 new WebPageTabModel("Tab 1"),
@@ -105,13 +98,13 @@ namespace WPF_HomeTool.ViewModels
             };
             Dictionary<Task<string>, WebPageTabModel> taskToWebPageTabModelDic = new Dictionary<Task<string>, WebPageTabModel>();
 
-            //List<Task<string>> tasks = new List<Task<string>>();
             foreach (var model in WebPageTabModels)
             {
-                if (urlsQueue.Count > 0)
+                if (webImageModelsQueue.Count > 0)
                 {
-                    taskToWebPageTabModelDic.Add(model.NavigateToUriAsync(urlsQueue.Dequeue()), model);
-                    //tasks.Add(model.NavigateToUriAsync(urlsQueue.Dequeue()));
+                    WebImageModel webImageModel= webImageModelsQueue.Dequeue();
+                    model.WebImageModel = webImageModel;
+                    taskToWebPageTabModelDic.Add(model.NavigateToUriAsync(webImageModel.PageUrl), model);
                 }
                 else
                 {
@@ -126,17 +119,20 @@ namespace WPF_HomeTool.ViewModels
                     string html = await completedTask;
                     WebPageTabModel webPageTabModel = taskToWebPageTabModelDic[completedTask];
                     string imageUrl=await getImageUrlFromImagePage_ImageFap(html);
+                    webPageTabModel.WebImageModel.ImageUrl = imageUrl;
                     Debug.WriteLine(webPageTabModel.Name + " 获取图片uri: " + imageUrl);
                     taskToWebPageTabModelDic.Remove(completedTask);
-                    WebImageModel imageModel = new WebImageModel() 
+                    //WebImageModel imageModel = new WebImageModel() 
+                    //{
+                    //    ImageUrl=imageUrl,
+                    //    FilePathWithoutExt= "F:\\Image Download\\"+Guid.NewGuid().ToString()
+                    //};
+                    await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel);
+                    if (webImageModelsQueue.Count > 0)
                     {
-                        ImageUrl=imageUrl,
-                        FilePathWithoutExt= "F:\\Image Download\\"+Guid.NewGuid().ToString()
-                    };
-                    await FileHelper.WebImageDownload(imageModel);
-                    if (urlsQueue.Count > 0)
-                    {
-                        taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(urlsQueue.Dequeue()), webPageTabModel);
+                        WebImageModel webImageModel = webImageModelsQueue.Dequeue();
+                        webPageTabModel.WebImageModel = webImageModel;
+                        taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(webImageModel.PageUrl), webPageTabModel);
                     }
                     UnCompletedCount--;
                 }
