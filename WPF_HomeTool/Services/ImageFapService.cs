@@ -59,7 +59,8 @@ namespace WPF_HomeTool.Services
                         IndexInAlbum = index,
                         IsDownloaded = false,
                         //ToString("N")表示32位无连字符的数字，默认情况下Guid包含连字符“-”，总长度36位
-                        FilePathWithoutExt = DownloadFolderPath+"\\"+albumName + "_" + index + " " + Guid.NewGuid().ToString("N").Substring(0,8),
+                        FilePathWithoutExt = DownloadFolderPath+"\\"+albumName + "_" + index + " " 
+                            + Guid.NewGuid().ToString("N").Substring(0,8),
                         PageUrl = url,
                     };
                     list.Add(model);
