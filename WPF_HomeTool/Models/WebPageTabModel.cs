@@ -20,12 +20,7 @@ namespace WPF_HomeTool.Models
         {
             Name = name;
             WebView = new WebView2();
-            WebView.Source = new Uri("http://www.google.com");
-            //WebView.Source = uri;
-            //WebView.Initialized += (o, e) => { Debug.WriteLine($"{name} is intialized"); };
-            //WebView.CoreWebView2InitializationCompleted += (o, e) => { Debug.WriteLine($"{name} is CoreWebView2InitializationCompleted"); };
-            //Debug.WriteLine("Initial "+uri);
-            //InitializeWebView(uri);
+            //WebView.Source = new Uri("http://www.google.com");
             WebView.NavigationCompleted += (o, e) =>
             {
                 IsNavigateComplete = true;
@@ -42,19 +37,20 @@ namespace WPF_HomeTool.Models
             {
                 await Task.Delay(100);
             }
-            await Task.Delay(1000);
+            await Task.Delay(2000);
             string jsonResult = await WebView.ExecuteScriptAsync("document.documentElement.outerHTML");
-            string html = System.Text.Json.JsonSerializer.Deserialize<string>(jsonResult);
-            Debug.WriteLine($"{Name} 导航结束: {uri} 抓取字节数：{html?.Length ?? 0}");
-            return html;
+            try
+            {
+                string html = System.Text.Json.JsonSerializer.Deserialize<string>(jsonResult);
+                Debug.WriteLine($"{Name} 导航结束: {uri} 抓取字节数：{html?.Length ?? 0}");
+                return html;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"{Name} 解析HTML出错: {ex.Message}");
+            }
+            return string.Empty;
         }
-
-        //private async void InitializeWebView(Uri uri)
-        //{
-        //    await WebView.EnsureCoreWebView2Async();
-        //    WebView.Source = uri;
-        //    //Debug.WriteLine("Initial " + uri);
-        //}
 
     }
 }

@@ -1,14 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAPICodePack.Shell;
+using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using WPF_HomeTool.Controls;
 using WPF_HomeTool.Models;
-using NLog.Extensions.Logging;
 //using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace WPF_HomeTool.Helpers
@@ -149,7 +150,7 @@ namespace WPF_HomeTool.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,"对媒体文件提取日期信息时发生异常");
+                _logger.LogError(ex, "对媒体文件提取日期信息时发生异常");
             }
         }
 
@@ -187,7 +188,7 @@ namespace WPF_HomeTool.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,"重命名文件时发生异常");
+                _logger.LogError(ex, "重命名文件时发生异常");
             }
         }
 
@@ -204,6 +205,36 @@ namespace WPF_HomeTool.Helpers
                 fileName = fileName.Replace(c, '_');
             }
             return fileName;
+        }
+
+        public static async Task WebImageDownload(WebImageModel model)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            using var httpClient = new HttpClient();
+            {
+                Uri uri = new Uri(model.ImageUrl);
+                //自动通过图片的URL获取图片的扩展名
+                var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
+                var fileExtension = Path.GetExtension(uriWithoutQuery);
+                var path = model.FilePathWithoutExt + fileExtension;
+                try
+                {
+                    // Download the image and write to the file
+                    var imageBytes = await httpClient.GetByteArrayAsync(uri);
+                    File.WriteAllBytes(path, imageBytes);
+                    model.IsDownloaded = true;
+                    sw.Stop();
+                    model.ImageDownloadTime = sw.Elapsed;
+                }
+                catch (Exception ex)
+                {
+                    Debug.Write(model.ImageUrl + "下载失败，已跳过：" + ex.ToString());
+                    //下载失败时，跳过当前图片，去下载下一张图片。当前图片不会被保存到进度文件中。
+                    model.IsSkipped = true;
+                    return;
+                }
+            }
         }
     }
 }

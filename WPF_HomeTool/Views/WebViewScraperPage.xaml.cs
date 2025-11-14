@@ -32,19 +32,15 @@ namespace WPF_HomeTool.Views
         private async void StartMenuItem_Click(object sender, RoutedEventArgs e)
         {
             VM.StartTabControlScraper();
-            await Task.Delay(1000);
+
+            //切换Tab以确保WebView2加载,因为对于TabControl，如果TabItem没有被选中，则内部的frameworkelement不会被加载
+            await Task.Delay(500);
             foreach (var item in WebPageTabControl.Items)
             {
                 WebPageTabControl.SelectedItem = item;
-                await Task.Delay(1000);
+                await Task.Delay(500);
             }
             WebPageTabControl.SelectedIndex = 0;
-            //await Task.Delay(1000);
-            //WebPageTabControl.SelectedIndex= 0;
-            //await Task.Delay(1000);
-            //WebPageTabControl.SelectedIndex = 1;
-            //await Task.Delay(1000);
-            //WebPageTabControl.SelectedIndex = 0;
         }
     }
 }
