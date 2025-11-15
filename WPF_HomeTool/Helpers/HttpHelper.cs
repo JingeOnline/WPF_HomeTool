@@ -46,7 +46,7 @@ namespace WPF_HomeTool.Helpers
                     // Download the image and write to the file
                     var imageBytes = await httpClient.GetByteArrayAsync(uri);
                     File.WriteAllBytes(path, imageBytes);
-                    model.IsDownloaded = true;
+                    model.DownloadStatus = WebImageDownloadStatus.Downloaded;
                     sw.Stop();
                     model.ImageDownloadTime = sw.Elapsed;
                 }
@@ -54,7 +54,7 @@ namespace WPF_HomeTool.Helpers
                 {
                     Debug.Write(model.ImageUrl + "下载失败，已跳过：" + ex.ToString());
                     //下载失败时，跳过当前图片，去下载下一张图片。当前图片不会被保存到进度文件中。
-                    model.IsSkipped = true;
+                    model.DownloadStatus = WebImageDownloadStatus.Failed;
                     return;
                 }
             }

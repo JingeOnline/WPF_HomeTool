@@ -57,7 +57,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <DataGrid ItemsSource="{Binding VM.WebAlbumModels}"
-                      AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True">
+                      AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" CanUserAddRows="False">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridCell">
                         <Setter Property="VerticalAlignment" Value="Center" />
@@ -70,7 +70,18 @@
                 </DataGrid.Columns>
             </DataGrid>
             <GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" HorizontalAlignment="Stretch" Width="8" Background="Transparent"/>
-            <DataGrid Grid.Column="2">
+            <DataGrid Grid.Column="2" ItemsSource="{Binding VM.WebImageModels}" 
+                      AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" CanUserAddRows="False">
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Index" Binding="{Binding IndexInAlbum}" Width="auto"/>
+                    <DataGridTextColumn Header="Page Url" Binding="{Binding PageUrl}" Width="2*"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding DownloadStatus}" Width="*"/>
+                </DataGrid.Columns>
             </DataGrid>
         </Grid>
         <Border Grid.Row="3" Style="{StaticResource MenuBorder}" Padding="0,8,0,0">

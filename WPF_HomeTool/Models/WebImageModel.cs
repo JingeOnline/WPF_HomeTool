@@ -19,12 +19,21 @@ namespace WPF_HomeTool.Models
         [ObservableProperty]
         private int _indexInAlbum;
         [ObservableProperty]
-        private bool _isDownloaded;
-        [ObservableProperty]
-        private bool _isSkipped;
+        private WebImageDownloadStatus _downloadStatus;
+        //[ObservableProperty]
+        //private bool _isSkipped;
         [ObservableProperty]
         private TimeSpan _imageDownloadTime;
         [ObservableProperty]
         private string _filePathWithoutExt;
+    }
+
+    public enum WebImageDownloadStatus
+    {
+        UnDownload,
+        Downloading,
+        Downloaded,
+        Failed,
+        Skipped
     }
 }

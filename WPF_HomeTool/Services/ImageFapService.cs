@@ -15,10 +15,19 @@ namespace WPF_HomeTool.Services
     public class ImageFapService
     {
         public const string BaseURL = "https://www.imagefap.com";
-        public static string DownloadFolderPath;
+        public string DownloadFolderPath;
+        private string _albumName;
         public ImageFapService()
         {
             DownloadFolderPath = "F:\\Image Download";
+        }
+
+        public async Task<WebAlbumModel> GetImagePagesFromWebAlbumModel(WebAlbumModel webAlbumModel)
+        {
+            webAlbumModel.WebImageModelList = await GetImagePageUrlFromAlbumPage(webAlbumModel.AlbumUrl);
+            webAlbumModel.TotalImageCount = webAlbumModel.WebImageModelList.Count;
+            webAlbumModel.AlbumName = _albumName;
+            return webAlbumModel;
         }
         public async Task<List<WebImageModel>> GetImagePageUrlFromAlbumPage(string albumPageUrl)
         {
@@ -40,6 +49,7 @@ namespace WPF_HomeTool.Services
                     document = await context.OpenAsync(request => request.Content(html));
                     albumName = document.QuerySelector("title").InnerHtml;
                     albumName = FileHelper.ReplaceWindowsReservedChar(albumName);
+                    _albumName = albumName;
                     //相册第一页的地址不是唯一的，所以需要这里获取真正的页面URL
                     albumPageUrl = document.QuerySelector("link[rel=canonical]").GetAttribute("href");
                 }
@@ -57,7 +67,7 @@ namespace WPF_HomeTool.Services
                         AlbumUrl = albumPageUrl,
                         AlbumName = albumName,
                         IndexInAlbum = index,
-                        IsDownloaded = false,
+                        DownloadStatus = WebImageDownloadStatus.UnDownload,
                         //ToString("N")表示32位无连字符的数字，默认情况下Guid包含连字符“-”，总长度36位
                         FilePathWithoutExt = DownloadFolderPath+"\\"+albumName + "_" + index + " " 
                             + Guid.NewGuid().ToString("N").Substring(0,8),

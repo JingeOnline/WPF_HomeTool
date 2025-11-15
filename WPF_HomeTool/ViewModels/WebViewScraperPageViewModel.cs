@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -28,9 +29,11 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private string _webSite;
         [ObservableProperty]
-        private ObservableCollection<WebPageTabModel> _WebPageTabModels=new ObservableCollection<WebPageTabModel>();
+        private ObservableCollection<WebPageTabModel> _WebPageTabModels = new ObservableCollection<WebPageTabModel>();
         [ObservableProperty]
-        private ObservableCollection<WebAlbumModel> _WebAlbumModels=new ObservableCollection<WebAlbumModel>();
+        private ObservableCollection<WebAlbumModel> _WebAlbumModels = new ObservableCollection<WebAlbumModel>();
+        [ObservableProperty]
+        private ObservableCollection<WebImageModel> _WebImageModels = new ObservableCollection<WebImageModel>();
         [ObservableProperty]
         private Visibility _HeaderVisibility = Visibility.Visible;
         [ObservableProperty]
@@ -49,7 +52,7 @@ namespace WPF_HomeTool.ViewModels
         {
             ConfigHelper.WriteKeyValue("ImageSavePath", value);
         }
-        private int UnCompletedCount;
+        //private int UnCompletedCount;
 
         //private List<string> urls = new List<string>()
         //{
@@ -82,6 +85,8 @@ namespace WPF_HomeTool.ViewModels
             IsNeedCreateAlbumFolder = ConfigHelper.ReadKeyValue("IsNeedCreateAlbumFolder") == "True";
             ImageSavePath = ConfigHelper.ReadKeyValue("ImagesSavePath")!;
         }
+
+
         [RelayCommand]
         private void SelectImagesSavePath()
         {
@@ -110,18 +115,33 @@ namespace WPF_HomeTool.ViewModels
             }
         }
         [RelayCommand]
-        private void AddAlbumUri()
+        private async void AddAlbumUri()
         {
-            WebAlbumModels.Add(new WebAlbumModel(UserInputAlbumUri));
-            UserInputAlbumUri = string.Empty;
+            if (Uri.IsWellFormedUriString(UserInputAlbumUri, UriKind.Absolute))
+            {
+                WebAlbumModel model = new WebAlbumModel(UserInputAlbumUri);
+                WebAlbumModels.Add(model);
+                UserInputAlbumUri = string.Empty;
+                await Task.Run(async () =>
+                {
+                    ImageFapService imageFapService = new ImageFapService();
+                    model = await imageFapService.GetImagePagesFromWebAlbumModel(model);
+                });
+                if (model.TotalImageCount != 0)
+                {
+                    foreach (var imageModel in model.WebImageModelList)
+                    {
+                        WebImageModels.Add(imageModel);
+                    }
+                }
+            }
         }
         public async Task StartTabControlScraper()
         {
-            ImageFapService imageFapService = new ImageFapService();
-            List<WebImageModel> webImageModels = await imageFapService.GetImagePageUrlFromAlbumPage(
-                "https://www.imagefap.com/pictures/7132227/Maria");
-            Queue<WebImageModel> webImageModelsQueue = new Queue<WebImageModel>(webImageModels);
-            UnCompletedCount = webImageModelsQueue.Count;
+
+            //Queue<WebImageModel> webImageModelsQueue = new Queue<WebImageModel>(webImageModels);
+            //UnCompletedCount = webImageModelsQueue.Count;
+            //UnCompletedCount= WebImageModels.Count;
             OnTabImageStarted?.Invoke();
 
             WebPageTabModels = new ObservableCollection<WebPageTabModel>()
@@ -132,20 +152,23 @@ namespace WPF_HomeTool.ViewModels
             };
             Dictionary<Task<string>, WebPageTabModel> taskToWebPageTabModelDic = new Dictionary<Task<string>, WebPageTabModel>();
 
-            foreach (var model in WebPageTabModels)
+            int index = 0;
+            foreach (var webPageTabModel in WebPageTabModels)
             {
-                if (webImageModelsQueue.Count > 0)
+                if (WebImageModels.Count > index)
                 {
-                    WebImageModel webImageModel = webImageModelsQueue.Dequeue();
-                    model.WebImageModel = webImageModel;
-                    taskToWebPageTabModelDic.Add(model.NavigateToUriAsync(webImageModel.PageUrl), model);
+                    WebImageModel webImageModel = WebImageModels[index];
+                    webImageModel.DownloadStatus = WebImageDownloadStatus.Downloading;
+                    webPageTabModel.WebImageModel = webImageModel;
+                    taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(webImageModel.PageUrl), webPageTabModel);
+                    index++;
                 }
                 else
                 {
                     break;
                 }
             }
-            while (UnCompletedCount > 0)
+            while (WebImageModels.Count(x=>x.DownloadStatus==WebImageDownloadStatus.Downloading) > 0)
             {
                 try
                 {
@@ -156,19 +179,16 @@ namespace WPF_HomeTool.ViewModels
                     webPageTabModel.WebImageModel.ImageUrl = imageUrl;
                     Debug.WriteLine(webPageTabModel.Name + " 获取图片uri: " + imageUrl);
                     taskToWebPageTabModelDic.Remove(completedTask);
-                    //WebImageModel imageModel = new WebImageModel() 
-                    //{
-                    //    ImageUrl=imageUrl,
-                    //    FilePathWithoutExt= "F:\\Image Download\\"+Guid.NewGuid().ToString()
-                    //};
                     await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel);
-                    if (webImageModelsQueue.Count > 0)
+                    if (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.UnDownload) > 0)
                     {
-                        WebImageModel webImageModel = webImageModelsQueue.Dequeue();
+                        WebImageModel webImageModel = WebImageModels[index];
+                        webImageModel.DownloadStatus = WebImageDownloadStatus.Downloading;
                         webPageTabModel.WebImageModel = webImageModel;
                         taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(webImageModel.PageUrl), webPageTabModel);
+                        index++;
                     }
-                    UnCompletedCount--;
+                    //UnCompletedCount--;
                 }
                 catch (Exception e)
                 {
