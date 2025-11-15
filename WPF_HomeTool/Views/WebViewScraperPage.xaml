@@ -6,9 +6,9 @@
       xmlns:local="clr-namespace:WPF_HomeTool.Views"
       xmlns:controls="clr-namespace:WPF_HomeTool.Controls"
       xmlns:models="clr-namespace:WPF_HomeTool.Models"
-      xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="650" d:DesignWidth="1200"
       Title="WebViewScraperPage">
 
     <Grid>
@@ -25,23 +25,54 @@
         <Border Grid.Row="1" Style="{StaticResource MenuBorder}" Visibility="{Binding VM.HeaderVisibility}">
             <Menu >
                 <ComboBox Width="140" Margin="0" Padding="0" SelectedValuePath="Content"
-                          SelectedValue="{Binding VM.SelectedMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                          SelectedValue="{Binding VM.WebSite, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <ComboBoxItem Content="ImageFap" IsSelected="True"/>
                     <ComboBoxItem Content="Other1"/>
                     <ComboBoxItem Content="Other2"/>
                 </ComboBox>
                 <Separator/>
-                <TextBox Width="300" VerticalContentAlignment="Center"/>
-                <MenuItem Header="添加" Icon="{StaticResource IconAdd}" />
+                <TextBox Width="300" VerticalContentAlignment="Center" Text="{Binding VM.UserInputAlbumUri, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Enter" Command="{Binding VM.AddAlbumUriCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <MenuItem Header="添加" Icon="{StaticResource IconAdd}" Command="{Binding VM.AddAlbumUriCommand}"/>
                 <MenuItem Header="删除" Icon="{StaticResource IconRemove}" />
                 <MenuItem Header="清空" Icon="{StaticResource IconClear}" />
                 <Separator/>
+                <MenuItem Header="保存路径" Icon="{StaticResource IconSave}">
+                    <Button Content="选择路径" VerticalAlignment="Center" Command="{Binding VM.SelectImagesSavePathCommand}"/>
+                    <TextBox Width="280" Text="{Binding VM.ImageSavePath,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                </MenuItem>
+                <MenuItem Header="其他设置" Icon="{StaticResource IconSetting}">
+                    <CheckBox Content="为每个相册创建独立文件夹" IsChecked="{Binding VM.IsNeedCreateAlbumFolder,Mode=TwoWay}"/>
+                </MenuItem>
                 <MenuItem x:Name="StartMenuItem" Header="开始" Icon="{StaticResource IconDownload}" Click="StartMenuItem_Click"/>
             </Menu>
         </Border>
-        <DataGrid Grid.Row="2" Margin="0,8,0,8" Visibility="{Binding VM.HeaderVisibility}">
-
-        </DataGrid>
+        <Grid Grid.Row="2" Margin="0,8,0,8" Visibility="{Binding VM.HeaderVisibility}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <DataGrid ItemsSource="{Binding VM.WebAlbumModels}"
+                      AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True">
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Url" Binding="{Binding AlbumUrl}" Width="*"/>
+                    <DataGridTextColumn Header="Album Name" Binding="{Binding AlbumName}" Width="*"/>
+                    <DataGridTextColumn Header="Images" Binding="{Binding TotalImageCount}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" HorizontalAlignment="Stretch" Width="8" Background="Transparent"/>
+            <DataGrid Grid.Column="2">
+            </DataGrid>
+        </Grid>
         <Border Grid.Row="3" Style="{StaticResource MenuBorder}" Padding="0,8,0,0">
             <Grid>
                 <TabControl x:Name="WebPageTabControl" ItemsSource="{Binding VM.WebPageTabModels}">
@@ -71,7 +102,7 @@
                 </Button>
             </Grid>
 
-            
+
         </Border>
 
     </Grid>

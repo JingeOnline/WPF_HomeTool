@@ -3,9 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:WPF_HomeTool"
              >
+             <!--xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"-->
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!--使用WPF-UI，nuget包-->
+                <!--<ui:ThemesDictionary Theme="Light" />
+                <ui:ControlsDictionary />-->
+                <!--使用WPF-UI，nuget包-->
                 <ResourceDictionary Source="Styles/CommonStyle.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlockIcons.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml" />

@@ -23,7 +23,7 @@ namespace WPF_HomeTool.Helpers
             cfa.Save();
         }
 
-        public static void SaveKeyValue(string key, string value)
+        public static void WriteKeyValue(string key, string value)
         {
             cfa.AppSettings.Settings[key].Value = value;
             cfa.Save();
@@ -57,7 +57,7 @@ namespace WPF_HomeTool.Helpers
                 string valueInConfig=ReadKeyValue(keyValueModel.Key!)!;
                 if(valueInConfig!=keyValueModel.Value)
                 {
-                    SaveKeyValue(keyValueModel.Key,keyValueModel.Value);
+                    WriteKeyValue(keyValueModel.Key,keyValueModel.Value);
                 }
             }
         }

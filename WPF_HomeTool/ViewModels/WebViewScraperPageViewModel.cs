@@ -3,6 +3,7 @@ using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,47 +26,75 @@ namespace WPF_HomeTool.ViewModels
         private readonly ILogger<WebViewScraperPageViewModel> _logger;
 
         [ObservableProperty]
-        private ObservableCollection<WebPageTabModel> _WebPageTabModels;
+        private string _webSite;
+        [ObservableProperty]
+        private ObservableCollection<WebPageTabModel> _WebPageTabModels=new ObservableCollection<WebPageTabModel>();
+        [ObservableProperty]
+        private ObservableCollection<WebAlbumModel> _WebAlbumModels=new ObservableCollection<WebAlbumModel>();
         [ObservableProperty]
         private Visibility _HeaderVisibility = Visibility.Visible;
         [ObservableProperty]
         private GridLength _DataGridLength = new GridLength(2, GridUnitType.Star);
-
+        [ObservableProperty]
+        private bool _isNeedCreateAlbumFolder;
+        [ObservableProperty]
+        private string _userInputAlbumUri;
+        partial void OnIsNeedCreateAlbumFolderChanged(bool value)
+        {
+            ConfigHelper.WriteKeyValue("IsNeedCreateAlbumFolder", value ? "True" : "False");
+        }
+        [ObservableProperty]
+        private string _imageSavePath;
+        partial void OnImageSavePathChanged(string value)
+        {
+            ConfigHelper.WriteKeyValue("ImageSavePath", value);
+        }
         private int UnCompletedCount;
 
-        private List<string> urls = new List<string>()
-        {
-            //只支持这种格式的页面
-            "https://www.imagefap.com/photo/1187634730/?pgid=&gid=9068759&page=0",
-            "https://www.imagefap.com/photo/1184537525/?pgid=&gid=9068759&page=0",
-            "https://www.imagefap.com/photo/1152220050/?pgid=&gid=9068759&page=0",
-            "https://www.imagefap.com/photo/1163688955/?pgid=&gid=9068759&page=0",
-            "https://www.imagefap.com/photo/1757328285/?pgid=&gid=9068759&page=0",
-            "https://www.imagefap.com/photo/1091188060/?pgid=&gid=9068759&page=0",
-            "https://www.imagefap.com/photo/553653526/?pgid=&gid=9068759&page=0",
-            "https://www.imagefap.com/photo/611135218/?pgid=&gid=9068759&page=0",
-            //这种格式的页面暂不支持，NavigationCompleted事件无法触发
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#0",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#1",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#2",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#3",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#4",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#5",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#6",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#7",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#8",
-            //"https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#9",
-        };
+        //private List<string> urls = new List<string>()
+        //{
+        //    只支持这种格式的页面
+        //    "https://www.imagefap.com/photo/1187634730/?pgid=&gid=9068759&page=0",
+        //    "https://www.imagefap.com/photo/1184537525/?pgid=&gid=9068759&page=0",
+        //    "https://www.imagefap.com/photo/1152220050/?pgid=&gid=9068759&page=0",
+        //    "https://www.imagefap.com/photo/1163688955/?pgid=&gid=9068759&page=0",
+        //    "https://www.imagefap.com/photo/1757328285/?pgid=&gid=9068759&page=0",
+        //    "https://www.imagefap.com/photo/1091188060/?pgid=&gid=9068759&page=0",
+        //    "https://www.imagefap.com/photo/553653526/?pgid=&gid=9068759&page=0",
+        //    "https://www.imagefap.com/photo/611135218/?pgid=&gid=9068759&page=0",
+        //    这种格式的页面暂不支持，NavigationCompleted事件无法触发
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#0",
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#1",
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#2",
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#3",
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#4",
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#5",
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#6",
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#7",
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#8",
+        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#9",
+        //};
 
-        //private Queue<string> urlsQueue;
 
         public WebViewScraperPageViewModel(ILogger<WebViewScraperPageViewModel> logger)
         {
-
-            //urlsQueue = new Queue<string>(urls);
-            //UnCompletedCount = urlsQueue.Count;
+            _logger = logger;
+            IsNeedCreateAlbumFolder = ConfigHelper.ReadKeyValue("IsNeedCreateAlbumFolder") == "True";
+            ImageSavePath = ConfigHelper.ReadKeyValue("ImagesSavePath")!;
         }
-
+        [RelayCommand]
+        private void SelectImagesSavePath()
+        {
+            using (CommonOpenFileDialog dialog = new CommonOpenFileDialog())
+            {
+                dialog.IsFolderPicker = true; //Select Folder Only
+                dialog.Multiselect = false;
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    ImageSavePath = dialog.FileName;
+                }
+            }
+        }
         [RelayCommand]
         private void WebTabExpand()
         {
@@ -80,7 +109,12 @@ namespace WPF_HomeTool.ViewModels
                 HeaderVisibility = Visibility.Visible;
             }
         }
-
+        [RelayCommand]
+        private void AddAlbumUri()
+        {
+            WebAlbumModels.Add(new WebAlbumModel(UserInputAlbumUri));
+            UserInputAlbumUri = string.Empty;
+        }
         public async Task StartTabControlScraper()
         {
             ImageFapService imageFapService = new ImageFapService();
@@ -102,7 +136,7 @@ namespace WPF_HomeTool.ViewModels
             {
                 if (webImageModelsQueue.Count > 0)
                 {
-                    WebImageModel webImageModel= webImageModelsQueue.Dequeue();
+                    WebImageModel webImageModel = webImageModelsQueue.Dequeue();
                     model.WebImageModel = webImageModel;
                     taskToWebPageTabModelDic.Add(model.NavigateToUriAsync(webImageModel.PageUrl), model);
                 }
@@ -118,7 +152,7 @@ namespace WPF_HomeTool.ViewModels
                     Task<string> completedTask = await Task.WhenAny(taskToWebPageTabModelDic.Keys);
                     string html = await completedTask;
                     WebPageTabModel webPageTabModel = taskToWebPageTabModelDic[completedTask];
-                    string imageUrl=await getImageUrlFromImagePage_ImageFap(html);
+                    string imageUrl = await getImageUrlFromImagePage_ImageFap(html);
                     webPageTabModel.WebImageModel.ImageUrl = imageUrl;
                     Debug.WriteLine(webPageTabModel.Name + " 获取图片uri: " + imageUrl);
                     taskToWebPageTabModelDic.Remove(completedTask);
@@ -158,7 +192,7 @@ namespace WPF_HomeTool.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
-                _logger.LogError(ex,$"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
+                _logger.LogError(ex, $"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
                 _logger.LogInformation($"HTML内容:\r\n{html}");
             }
             return string.Empty;
