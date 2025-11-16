@@ -35,6 +35,8 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private ObservableCollection<WebImageModel> _WebImageModels = new ObservableCollection<WebImageModel>();
         [ObservableProperty]
+        private WebAlbumModel _selectedWebAlbumModel;
+        [ObservableProperty]
         private Visibility _HeaderVisibility = Visibility.Visible;
         [ObservableProperty]
         private GridLength _DataGridLength = new GridLength(2, GridUnitType.Star);
@@ -42,6 +44,11 @@ namespace WPF_HomeTool.ViewModels
         private bool _isNeedCreateAlbumFolder;
         [ObservableProperty]
         private string _userInputAlbumUri;
+        [ObservableProperty]
+        private string _statusText = String.Empty;
+        [ObservableProperty]
+        private string _statusDetailText = String.Empty;
+
         partial void OnIsNeedCreateAlbumFolderChanged(bool value)
         {
             ConfigHelper.WriteKeyValue("IsNeedCreateAlbumFolder", value ? "True" : "False");
@@ -52,38 +59,11 @@ namespace WPF_HomeTool.ViewModels
         {
             ConfigHelper.WriteKeyValue("ImageSavePath", value);
         }
-        //private int UnCompletedCount;
-
-        //private List<string> urls = new List<string>()
-        //{
-        //    只支持这种格式的页面
-        //    "https://www.imagefap.com/photo/1187634730/?pgid=&gid=9068759&page=0",
-        //    "https://www.imagefap.com/photo/1184537525/?pgid=&gid=9068759&page=0",
-        //    "https://www.imagefap.com/photo/1152220050/?pgid=&gid=9068759&page=0",
-        //    "https://www.imagefap.com/photo/1163688955/?pgid=&gid=9068759&page=0",
-        //    "https://www.imagefap.com/photo/1757328285/?pgid=&gid=9068759&page=0",
-        //    "https://www.imagefap.com/photo/1091188060/?pgid=&gid=9068759&page=0",
-        //    "https://www.imagefap.com/photo/553653526/?pgid=&gid=9068759&page=0",
-        //    "https://www.imagefap.com/photo/611135218/?pgid=&gid=9068759&page=0",
-        //    这种格式的页面暂不支持，NavigationCompleted事件无法触发
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#0",
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#1",
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#2",
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#3",
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#4",
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#5",
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#6",
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#7",
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#8",
-        //    "https://www.imagefap.com/photo/1395360464/?pgid=&gid=13612474&page=0#9",
-        //};
-
-
         public WebViewScraperPageViewModel(ILogger<WebViewScraperPageViewModel> logger)
         {
             _logger = logger;
             IsNeedCreateAlbumFolder = ConfigHelper.ReadKeyValue("IsNeedCreateAlbumFolder") == "True";
-            ImageSavePath = ConfigHelper.ReadKeyValue("ImagesSavePath")!;
+            ImageSavePath = ConfigHelper.ReadKeyValue("ImageSavePath")!;
         }
 
 
@@ -124,10 +104,18 @@ namespace WPF_HomeTool.ViewModels
                 UserInputAlbumUri = string.Empty;
                 await Task.Run(async () =>
                 {
-                    ImageFapService imageFapService = new ImageFapService();
-                    model = await imageFapService.GetImagePagesFromWebAlbumModel(model);
+                    try
+                    {
+                        model = await (new ImageFapService(ImageSavePath,IsNeedCreateAlbumFolder)).GetImagePagesFromWebAlbumModel(model);
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugAndOutputToStatusbar($"获取相册页面中的图片链接失败: {model.AlbumUrl}");
+                        _logger.LogError(ex, $"获取相册页面中的图片链接失败: {model.AlbumUrl}");
+                        model.TotalImageCount = -1;
+                    }
                 });
-                if (model.TotalImageCount != 0)
+                if (model.TotalImageCount > 0)
                 {
                     foreach (var imageModel in model.WebImageModelList)
                     {
@@ -136,19 +124,39 @@ namespace WPF_HomeTool.ViewModels
                 }
             }
         }
+        [RelayCommand]
+        private void RemoveSelectedAlbum()
+        {
+            //删除选中的相册中包含的图片
+            if (SelectedWebAlbumModel != null && SelectedWebAlbumModel.WebImageModelList != null)
+            {
+                foreach (var imageModel in SelectedWebAlbumModel.WebImageModelList)
+                {
+                    WebImageModels.Remove(imageModel);
+                }
+            }
+            //删除选中的相册
+            if (SelectedWebAlbumModel != null)
+            {
+                WebAlbumModels.Remove(SelectedWebAlbumModel);
+            }
+        }
+        [RelayCommand]
+        private async void Clear()
+        {
+            WebAlbumModels.Clear();
+            WebImageModels.Clear();
+        }
         public async Task StartTabControlScraper()
         {
-
-            //Queue<WebImageModel> webImageModelsQueue = new Queue<WebImageModel>(webImageModels);
-            //UnCompletedCount = webImageModelsQueue.Count;
-            //UnCompletedCount= WebImageModels.Count;
-            OnTabImageStarted?.Invoke();
 
             WebPageTabModels = new ObservableCollection<WebPageTabModel>()
             {
                 new WebPageTabModel("Tab 1"),
                 new WebPageTabModel("Tab 2"),
                 new WebPageTabModel("Tab 3"),
+                new WebPageTabModel("Tab 4"),
+                new WebPageTabModel("Tab 5"),
             };
             Dictionary<Task<string>, WebPageTabModel> taskToWebPageTabModelDic = new Dictionary<Task<string>, WebPageTabModel>();
 
@@ -168,7 +176,8 @@ namespace WPF_HomeTool.ViewModels
                     break;
                 }
             }
-            while (WebImageModels.Count(x=>x.DownloadStatus==WebImageDownloadStatus.Downloading) > 0)
+            OnTabImageStarted?.Invoke();
+            while (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.Downloading) > 0)
             {
                 try
                 {
@@ -177,7 +186,7 @@ namespace WPF_HomeTool.ViewModels
                     WebPageTabModel webPageTabModel = taskToWebPageTabModelDic[completedTask];
                     string imageUrl = await getImageUrlFromImagePage_ImageFap(html);
                     webPageTabModel.WebImageModel.ImageUrl = imageUrl;
-                    Debug.WriteLine(webPageTabModel.Name + " 获取图片uri: " + imageUrl);
+                    DebugAndOutputToStatusbar(webPageTabModel.Name + " 成功获取到图片uri: " + imageUrl);
                     taskToWebPageTabModelDic.Remove(completedTask);
                     await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel);
                     if (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.UnDownload) > 0)
@@ -192,11 +201,12 @@ namespace WPF_HomeTool.ViewModels
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine($"Error: {e.Message}");
+                    DebugAndOutputToStatusbar($"Error: {e.Message}");
+                    _logger.LogError(e, "TabControl中解析页面中的图片链接发生异常");
                 }
             }
             await Task.WhenAll(taskToWebPageTabModelDic.Keys);
-            Debug.WriteLine("All tasks completed.");
+            DebugAndOutputToStatusbar("All tasks completed.");
         }
         private async Task<string> getImageUrlFromImagePage_ImageFap(string html)
         {
@@ -211,7 +221,7 @@ namespace WPF_HomeTool.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
+                DebugAndOutputToStatusbar($"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
                 _logger.LogError(ex, $"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
                 _logger.LogInformation($"HTML内容:\r\n{html}");
             }
@@ -219,6 +229,14 @@ namespace WPF_HomeTool.ViewModels
             //string albumName = document.QuerySelector("title").InnerHtml;
             //string albumUrl = document.QuerySelector("link[rel=canonical]").GetAttribute("href");
         }
+
+        private void DebugAndOutputToStatusbar(string s)
+        {
+            Debug.WriteLine(s);
+            StatusText = s;
+            StatusDetailText += s+Environment.NewLine;
+        }
+
     }
 }
 

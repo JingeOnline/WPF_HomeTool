@@ -14,8 +14,6 @@ namespace WPF_HomeTool.Models
         private string _albumUrl;
         [ObservableProperty]
         private int _totalImageCount;
-        //[ObservableProperty]
-        //private int _downloadedImageCount;
         public List<WebImageModel> WebImageModelList { get; set; }= new List<WebImageModel>();
         public WebAlbumModel(string uri)
         {

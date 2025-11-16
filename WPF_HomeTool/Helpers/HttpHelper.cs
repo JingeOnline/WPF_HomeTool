@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace WPF_HomeTool.Helpers
 {
     public class HttpHelper
     {
-
+        public static NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
         public static async Task<string> GetHtmlContent(string url)
         {
             using var httpClient = new HttpClient();
@@ -26,7 +27,9 @@ namespace WPF_HomeTool.Helpers
                 catch (Exception ex)
                 {
                     Debug.Write("获取HTML内容失败 "+url+" : " + ex.ToString());
-                    return string.Empty;
+                    _logger.Error(ex, "获取HTML内容失败 " + url);
+                    throw;
+                    //return string.Empty;
                 }
             }
         }
@@ -45,6 +48,12 @@ namespace WPF_HomeTool.Helpers
                 {
                     // Download the image and write to the file
                     var imageBytes = await httpClient.GetByteArrayAsync(uri);
+                    //如果文件夹不存在，则创建文件夹
+                    string dir =Path.GetDirectoryName(path);
+                    if (!Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
                     File.WriteAllBytes(path, imageBytes);
                     model.DownloadStatus = WebImageDownloadStatus.Downloaded;
                     sw.Stop();

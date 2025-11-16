@@ -6,11 +6,14 @@
       xmlns:local="clr-namespace:WPF_HomeTool.Views"
       xmlns:controls="clr-namespace:WPF_HomeTool.Controls"
       xmlns:models="clr-namespace:WPF_HomeTool.Models"
+      xmlns:converters="clr-namespace:WPF_HomeTool.Converters"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d" 
       d:DesignHeight="650" d:DesignWidth="1200"
       Title="WebViewScraperPage">
-
+    <Page.Resources>
+        <converters:WebImageDownloadStatusToColorConverter x:Key="StatusToColorConverter"/>
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -37,15 +40,15 @@
                     </TextBox.InputBindings>
                 </TextBox>
                 <MenuItem Header="添加" Icon="{StaticResource IconAdd}" Command="{Binding VM.AddAlbumUriCommand}"/>
-                <MenuItem Header="删除" Icon="{StaticResource IconRemove}" />
-                <MenuItem Header="清空" Icon="{StaticResource IconClear}" />
+                <MenuItem Header="删除" Icon="{StaticResource IconRemove}" Command="{Binding VM.RemoveSelectedAlbumCommand}"/>
+                <MenuItem Header="清空" Icon="{StaticResource IconClear}" Command="{Binding VM.ClearCommand}"/>
                 <Separator/>
                 <MenuItem Header="保存路径" Icon="{StaticResource IconSave}">
                     <Button Content="选择路径" VerticalAlignment="Center" Command="{Binding VM.SelectImagesSavePathCommand}"/>
                     <TextBox Width="280" Text="{Binding VM.ImageSavePath,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                    <CheckBox Content="为每个相册创建独立文件夹" IsChecked="{Binding VM.IsNeedCreateAlbumFolder,Mode=TwoWay}"/>
                 </MenuItem>
                 <MenuItem Header="其他设置" Icon="{StaticResource IconSetting}">
-                    <CheckBox Content="为每个相册创建独立文件夹" IsChecked="{Binding VM.IsNeedCreateAlbumFolder,Mode=TwoWay}"/>
                 </MenuItem>
                 <MenuItem x:Name="StartMenuItem" Header="开始" Icon="{StaticResource IconDownload}" Click="StartMenuItem_Click"/>
             </Menu>
@@ -56,7 +59,7 @@
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <DataGrid ItemsSource="{Binding VM.WebAlbumModels}"
+            <DataGrid ItemsSource="{Binding VM.WebAlbumModels}" SelectedItem="{Binding VM.SelectedWebAlbumModel}"
                       AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" CanUserAddRows="False">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridCell">
@@ -72,6 +75,12 @@
             <GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" HorizontalAlignment="Stretch" Width="8" Background="Transparent"/>
             <DataGrid Grid.Column="2" ItemsSource="{Binding VM.WebImageModels}" 
                       AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" CanUserAddRows="False">
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" 
+                    Value="{Binding DownloadStatus, Converter={StaticResource StatusToColorConverter}}"/>
+                    </Style>
+                </DataGrid.RowStyle>
                 <DataGrid.Resources>
                     <Style TargetType="DataGridCell">
                         <Setter Property="VerticalAlignment" Value="Center" />
@@ -115,6 +124,43 @@
 
 
         </Border>
+        <Border Grid.Row="4" Style="{StaticResource MenuBorder}" Margin="0,8,0,0">
+            <Grid Margin="8,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding VM.StatusText,Mode=OneWay}" VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=StatusBarExpandButton, Path=IsChecked}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MaxHeight="400">
+                    <ScrollViewer.Style>
+                        <Style TargetType="ScrollViewer">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=StatusBarExpandButton, Path=IsChecked}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ScrollViewer.Style>
+                    <TextBlock Text="{Binding VM.StatusDetailText,Mode=OneWay}" TextWrapping="Wrap"/>
+                </ScrollViewer>
 
+                <ToggleButton x:Name="StatusBarExpandButton" 
+                        HorizontalAlignment="Right" VerticalAlignment="Top">
+                    <TextBlock Text="&#xE740;" Style="{StaticResource IconTextBlockStyle}"/>
+                </ToggleButton>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

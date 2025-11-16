@@ -34,7 +34,7 @@ namespace WPF_HomeTool.Views
             VM.OnTabImageStarted+=async()=>
             {
                 //切换Tab以确保WebView2加载,因为对于TabControl，如果TabItem没有被选中，则内部的frameworkelement不会被加载
-                await Task.Delay(500);
+                await Task.Delay(1200);
                 foreach (var item in WebPageTabControl.Items)
                 {
                     WebPageTabControl.SelectedItem = item;
