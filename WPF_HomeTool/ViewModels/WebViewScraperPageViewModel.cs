@@ -215,6 +215,7 @@ namespace WPF_HomeTool.ViewModels
         }
         public async Task StartTabControlScraper()
         {
+            DebugAndOutputToStatusbar("开始使用TabControl下载页面中的图片...");
             IEnumerable<int> tabsIndex = Enumerable.Range(1, TabAmount);
             foreach (var i in tabsIndex)
             {
@@ -258,7 +259,10 @@ namespace WPF_HomeTool.ViewModels
                     webPageTabModel.WebImageModel.ImageUrl = imageUrl;
                     DebugAndOutputToStatusbar(webPageTabModel.Name + " 成功获取到图片uri: " + imageUrl);
                     taskToWebPageTabModelDic.Remove(completedTask);
-                    await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
+                    //异步下载图片，速度快，但是容易触发人机验证防护
+                    HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
+                    //同步下载图片，速度慢，但是不容易触发人机验证防护
+                    //await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
                 }
                 catch (NotSupportedException nse)
                 {
