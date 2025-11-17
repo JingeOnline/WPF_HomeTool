@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAPICodePack.Shell;
 using NLog.Extensions.Logging;
 using System;
@@ -17,6 +20,16 @@ namespace WPF_HomeTool.Helpers
     public class FileHelper
     {
         private static readonly ILogger<FileHelper> _logger = LoggerFactory.Create(builder => builder.AddNLog()).CreateLogger<FileHelper>();
+        private static CsvConfiguration csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            //分隔符
+            Delimiter = "\t",
+            //是否包含表头
+            HasHeaderRecord = false,
+            //MissingFieldFound = null,
+            //HeaderValidated = null,
+        };
+
 
         /// <summary>
         /// 返回带单位的文件大小
@@ -197,15 +210,171 @@ namespace WPF_HomeTool.Helpers
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static string ReplaceWindowsReservedChar(string fileName)
+        public static string ReplaceWindowsReservedCharAndTrim(string fileName)
         {
             Char[] unSafeChars = { '*', ':', '\\', '/', '|', '\"', '|', '?', '<', '>' };
             foreach (char c in unSafeChars)
             {
                 fileName = fileName.Replace(c, '_');
             }
-            return fileName;
+            return fileName.Trim();
         }
 
+        /// <summary>
+        /// 向文件追加一行文本（如果文件不存在会自动创建该文件）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="line"></param>
+        public static void AppendLineToFile(string filePath, string line)
+        {
+            using (StreamWriter sw = new StreamWriter(filePath, append: true))
+            {
+                sw.WriteLine(line);
+            }
+        }
+
+        /// <summary>
+        /// 向文本文件中写入多行（如果目标文件不存在，会自动创建）
+        /// </summary>
+        /// <param name="models"></param>
+        public static void AppendLinesToFile(IEnumerable<string> lines, string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
+            }
+
+            if (lines == null)
+            {
+                //throw new ArgumentNullException(nameof(lines));
+                return;
+            }
+
+            File.AppendAllLines(filePath, lines);
+        }
+
+        /// <summary>
+        /// 读取文本文件
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="FileNotFoundException"></exception>
+        public static IEnumerable<string> ReadFileInLines(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
+            }
+
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"File not exist: {filePath}");
+            }
+
+            return File.ReadLines(filePath);
+        }
+
+        /// <summary>
+        /// 将模型转换为CSV格式的单行字符串
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static string ConvertModelToCsvLine<T>(T model)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            using (var writer = new StringWriter())
+            using (var csv = new CsvWriter(writer, csvConfig))
+            {
+                csv.WriteRecord(model);
+                csv.NextRecord();//没有这行代码，输出的字符串为空
+                writer.Flush();
+                string line = writer.ToString();
+                return line.Trim();
+            }
+        }
+
+        /// <summary>
+        /// 将模型列表追加写入CSV文件（如果文件不存在会自动创建该文件）
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="models"></param>
+        /// <param name="filePath"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public static void AppendModelsToCsv<T>(List<T> models, string filePath)
+        {
+            if (models == null || models.Count == 0)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
+            }
+
+            using (var stream = File.Open(filePath, FileMode.Append))
+            using (var writer = new StreamWriter(stream))
+            using (var csv = new CsvWriter(writer, csvConfig))
+            {
+                csv.WriteRecords(models);
+            }
+        }
+
+        /// <summary>
+        /// 从CSV文件中读取所有model
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="FileNotFoundException"></exception>
+        public static List<T> ReadCsvFile<T>(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
+            }
+
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"File not found: {filePath}");
+            }
+
+            using (var reader = new StreamReader(filePath))
+            using (var csv = new CsvReader(reader, csvConfig))
+            {
+                return csv.GetRecords<T>().ToList();
+            }
+        }
+
+        private static readonly object removeLineFromFileLock = new object();
+
+        /// <summary>
+        /// 从文本文件中移除指定行（线程安全）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="lineToRemove"></param>
+        /// <exception cref="FileNotFoundException"></exception>
+        public static void RemoveLineFromFile_ThreadSafe(string filePath, string lineToRemove)
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"File not found: {filePath}");
+            }
+
+            lock (removeLineFromFileLock)
+            {
+                var lines = File.ReadAllLines(filePath);
+                var updatedLines = lines.Where(line => line != lineToRemove).ToList();
+                File.WriteAllLines(filePath, updatedLines);
+            }
+        }
     }
 }

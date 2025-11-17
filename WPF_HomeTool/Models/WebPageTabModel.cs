@@ -41,18 +41,24 @@ namespace WPF_HomeTool.Models
                 await Task.Delay(100);
             }
             await Task.Delay(2000);
-            string jsonResult = await WebView.ExecuteScriptAsync("document.documentElement.outerHTML");
+            string html;
             try
             {
-                string html = System.Text.Json.JsonSerializer.Deserialize<string>(jsonResult);
+                string jsonResult = await WebView.ExecuteScriptAsync("document.documentElement.outerHTML");
+                html = System.Text.Json.JsonSerializer.Deserialize<string>(jsonResult);
                 Debug.WriteLine($"{Name} 导航结束: {uri} 抓取字节数：{html?.Length ?? 0}");
-                return html;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"{Name} 解析HTML出错: {ex.Message}");
+                throw;
             }
-            return string.Empty;
+            if (html.Contains("Welcome to the ImageFap protection system"))
+            {
+                throw new NotSupportedException("触发ImageFap防护系统，需要手动在浏览器中打开并通过验证");
+            }
+            return html;
+            //return string.Empty;
         }
 
     }

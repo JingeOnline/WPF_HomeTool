@@ -13,6 +13,7 @@
       Title="WebViewScraperPage">
     <Page.Resources>
         <converters:WebImageDownloadStatusToColorConverter x:Key="StatusToColorConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -47,9 +48,15 @@
                     <Button Content="选择路径" VerticalAlignment="Center" Command="{Binding VM.SelectImagesSavePathCommand}"/>
                     <TextBox Width="280" Text="{Binding VM.ImageSavePath,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
                     <CheckBox Content="为每个相册创建独立文件夹" IsChecked="{Binding VM.IsNeedCreateAlbumFolder,Mode=TwoWay}"/>
+                    <Button Content="在资源管理器中打开下载路径" VerticalAlignment="Center" Command="{Binding VM.OpenSaveFolderInFileExplorerCommand}"/>
                 </MenuItem>
-                <MenuItem Header="其他设置" Icon="{StaticResource IconSetting}">
+                <MenuItem Header="重载失败" Icon="{StaticResource IconRefresh}" Command="{Binding VM.LoadUndwonloadWebImageModelsFromSaveCommand}">
                 </MenuItem>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="并行数量 " VerticalAlignment="Center"/>
+                    <ComboBox VerticalAlignment="Center" ItemsSource="{Binding VM.TabAmountCollection}" SelectedItem="{Binding VM.TabAmount}"/>
+                </StackPanel>
+                <Separator/>
                 <MenuItem x:Name="StartMenuItem" Header="开始" Icon="{StaticResource IconDownload}" Click="StartMenuItem_Click"/>
             </Menu>
         </Border>
@@ -115,11 +122,14 @@
                         </DataTemplate>
                     </TabControl.ItemTemplate>
                 </TabControl>
-                <Button x:Name="WebTabExpandButton" Background="Transparent" BorderBrush="Transparent" 
-                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                    <Button Content="人机验证结束" Visibility="{Binding VM.IsNeedHumandValidate,Converter={StaticResource BoolToVisibilityConverter}}"
+                            Command="{Binding VM.HumandValidateCompletedCommand}"/>
+                    <Button x:Name="WebTabExpandButton" Background="Transparent" BorderBrush="Transparent" 
                         Command="{Binding VM.WebTabExpandCommand}">
-                    <TextBlock Text="&#xE93A;" Style="{StaticResource IconTextBlockStyle}"/>
-                </Button>
+                        <TextBlock Text="&#xE93A;" Style="{StaticResource IconTextBlockStyle}"/>
+                    </Button>
+                </StackPanel>
             </Grid>
 
 
@@ -142,7 +152,7 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MaxHeight="400">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="400">
                     <ScrollViewer.Style>
                         <Style TargetType="ScrollViewer">
                             <Setter Property="Visibility" Value="Collapsed"/>

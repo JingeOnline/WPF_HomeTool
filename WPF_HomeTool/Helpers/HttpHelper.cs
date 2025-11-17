@@ -33,7 +33,7 @@ namespace WPF_HomeTool.Helpers
                 }
             }
         }
-        public static async Task DownloadWebImage(WebImageModel model)
+        public static async Task DownloadWebImage(WebImageModel model, Action<WebImageModel> OnDownloadSucceed)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -54,10 +54,11 @@ namespace WPF_HomeTool.Helpers
                     {
                         Directory.CreateDirectory(dir);
                     }
-                    File.WriteAllBytes(path, imageBytes);
+                    await File.WriteAllBytesAsync(path, imageBytes);
                     model.DownloadStatus = WebImageDownloadStatus.Downloaded;
                     sw.Stop();
                     model.ImageDownloadTime = sw.Elapsed;
+                    OnDownloadSucceed?.Invoke(model);
                 }
                 catch (Exception ex)
                 {

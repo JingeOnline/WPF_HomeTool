@@ -7,6 +7,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -41,13 +42,24 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private GridLength _DataGridLength = new GridLength(2, GridUnitType.Star);
         [ObservableProperty]
-        private bool _isNeedCreateAlbumFolder;
-        [ObservableProperty]
         private string _userInputAlbumUri;
         [ObservableProperty]
         private string _statusText = String.Empty;
         [ObservableProperty]
         private string _statusDetailText = String.Empty;
+        [ObservableProperty]
+        private int _tabAmount = 4;
+        partial void OnTabAmountChanged(int oldValue, int newValue)
+        {
+            if (oldValue != newValue)
+            {
+                ConfigHelper.WriteKeyValue("ParallelTabAmount", newValue.ToString());
+            }
+        }
+        [ObservableProperty]
+        private ObservableCollection<int> _tabAmountCollection;
+        [ObservableProperty]
+        private bool _isNeedCreateAlbumFolder;
 
         partial void OnIsNeedCreateAlbumFolderChanged(bool value)
         {
@@ -59,11 +71,18 @@ namespace WPF_HomeTool.ViewModels
         {
             ConfigHelper.WriteKeyValue("ImageSavePath", value);
         }
+
+        [ObservableProperty]
+        private bool _isHumanValided;
+        [ObservableProperty]
+        private bool _isNeedHumandValidate;
         public WebViewScraperPageViewModel(ILogger<WebViewScraperPageViewModel> logger)
         {
             _logger = logger;
             IsNeedCreateAlbumFolder = ConfigHelper.ReadKeyValue("IsNeedCreateAlbumFolder") == "True";
             ImageSavePath = ConfigHelper.ReadKeyValue("ImageSavePath")!;
+            TabAmount = int.Parse(ConfigHelper.ReadKeyValue("ParallelTabAmount")!);
+            TabAmountCollection = new ObservableCollection<int>() { 1, 2, 3, 4, 5, 6, 8, 10 };
         }
 
 
@@ -99,14 +118,33 @@ namespace WPF_HomeTool.ViewModels
         {
             if (Uri.IsWellFormedUriString(UserInputAlbumUri, UriKind.Absolute))
             {
+                ImageFapService imageFapService = new ImageFapService(ImageSavePath, IsNeedCreateAlbumFolder);
+                UserInputAlbumUri = UserInputAlbumUri.Trim();
+                try
+                {
+                    if (imageFapService.IsAlbumUrlAlreadyDownloaded(UserInputAlbumUri))
+                    {
+                        DebugAndOutputToStatusbar($"相册地址已存在于历史记录中，跳过: {UserInputAlbumUri}");
+                        UserInputAlbumUri = string.Empty;
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugAndOutputToStatusbar($"检查相册地址是否存在于历史记录时发生错误: {ex.Message}");
+                    _logger.LogError(ex, "检查相册地址是否存在于历史记录时发生错误");
+                    return;
+                }
+
                 WebAlbumModel model = new WebAlbumModel(UserInputAlbumUri);
                 WebAlbumModels.Add(model);
                 UserInputAlbumUri = string.Empty;
+
                 await Task.Run(async () =>
                 {
                     try
                     {
-                        model = await (new ImageFapService(ImageSavePath,IsNeedCreateAlbumFolder)).GetImagePagesFromWebAlbumModel(model);
+                        model = await imageFapService.GetImagePagesFromWebAlbumModel(model);
                     }
                     catch (Exception ex)
                     {
@@ -147,17 +185,49 @@ namespace WPF_HomeTool.ViewModels
             WebAlbumModels.Clear();
             WebImageModels.Clear();
         }
+        [RelayCommand]
+        private void LoadUndwonloadWebImageModelsFromSave()
+        {
+            ImageFapService imageFapService = new ImageFapService(ImageSavePath, IsNeedCreateAlbumFolder);
+            IEnumerable<WebImageModel> models = imageFapService.LoadUnDownloadFromSave();
+            if (models != null && models.Count() > 0)
+            {
+                foreach (WebImageModel model in models)
+                {
+                    WebImageModels.Add(model);
+                }
+            }
+        }
+        [RelayCommand]
+        private void OpenSaveFolderInFileExplorer()
+        {
+            if (!string.IsNullOrEmpty(ImageSavePath) && Directory.Exists(ImageSavePath))
+            {
+                string windowsFormatPath = Path.GetFullPath(ImageSavePath);
+                System.Diagnostics.Process.Start("explorer.exe", windowsFormatPath);
+            }
+        }
+        [RelayCommand]
+        private void HumandValidateCompleted()
+        {
+            IsHumanValided = true;
+            IsNeedHumandValidate = false;
+        }
         public async Task StartTabControlScraper()
         {
-
-            WebPageTabModels = new ObservableCollection<WebPageTabModel>()
+            IEnumerable<int> tabsIndex = Enumerable.Range(1, TabAmount);
+            foreach (var i in tabsIndex)
             {
-                new WebPageTabModel("Tab 1"),
-                new WebPageTabModel("Tab 2"),
-                new WebPageTabModel("Tab 3"),
-                new WebPageTabModel("Tab 4"),
-                new WebPageTabModel("Tab 5"),
-            };
+                WebPageTabModels.Add(new WebPageTabModel($"Tab {i}"));
+            }
+            //WebPageTabModels = new ObservableCollection<WebPageTabModel>()
+            //{
+            //    new WebPageTabModel("Tab 1"),
+            //    new WebPageTabModel("Tab 2"),
+            //    new WebPageTabModel("Tab 3"),
+            //    new WebPageTabModel("Tab 4"),
+            //    new WebPageTabModel("Tab 5"),
+            //};
             Dictionary<Task<string>, WebPageTabModel> taskToWebPageTabModelDic = new Dictionary<Task<string>, WebPageTabModel>();
 
             int index = 0;
@@ -179,34 +249,52 @@ namespace WPF_HomeTool.ViewModels
             OnTabImageStarted?.Invoke();
             while (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.Downloading) > 0)
             {
+                Task<string> completedTask = await Task.WhenAny(taskToWebPageTabModelDic.Keys);
+                WebPageTabModel webPageTabModel = taskToWebPageTabModelDic[completedTask];
                 try
                 {
-                    Task<string> completedTask = await Task.WhenAny(taskToWebPageTabModelDic.Keys);
-                    string html = await completedTask;
-                    WebPageTabModel webPageTabModel = taskToWebPageTabModelDic[completedTask];
+                    string html = await completedTask;//导航如果失败，会从这里抛出异常
                     string imageUrl = await getImageUrlFromImagePage_ImageFap(html);
                     webPageTabModel.WebImageModel.ImageUrl = imageUrl;
                     DebugAndOutputToStatusbar(webPageTabModel.Name + " 成功获取到图片uri: " + imageUrl);
                     taskToWebPageTabModelDic.Remove(completedTask);
-                    await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel);
-                    if (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.UnDownload) > 0)
+                    await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
+                }
+                catch (NotSupportedException nse)
+                {
+                    DebugAndOutputToStatusbar(nse.Message);
+                    _logger.LogError(nse.Message);
+                    if (IsHumanValided)
                     {
-                        WebImageModel webImageModel = WebImageModels[index];
-                        webImageModel.DownloadStatus = WebImageDownloadStatus.Downloading;
-                        webPageTabModel.WebImageModel = webImageModel;
-                        taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(webImageModel.PageUrl), webPageTabModel);
-                        index++;
+                        IsHumanValided = false;
                     }
-                    //UnCompletedCount--;
+                    IsNeedHumandValidate= true;
+                    while (!IsHumanValided)
+                    {
+                        await Task.Delay(200);
+                    }
+                    taskToWebPageTabModelDic.Remove(completedTask);
                 }
                 catch (Exception e)
                 {
                     DebugAndOutputToStatusbar($"Error: {e.Message}");
                     _logger.LogError(e, "TabControl中解析页面中的图片链接发生异常");
+                    taskToWebPageTabModelDic.Remove(completedTask);
                 }
+                //当上面的异常发生后，添加新的任务
+                if (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.UnDownload) > 0)
+                {
+                    WebImageModel webImageModel = WebImageModels[index];
+                    webImageModel.DownloadStatus = WebImageDownloadStatus.Downloading;
+                    webPageTabModel.WebImageModel = webImageModel;
+                    taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(webImageModel.PageUrl), webPageTabModel);
+                    index++;
+                }
+
             }
             await Task.WhenAll(taskToWebPageTabModelDic.Keys);
             DebugAndOutputToStatusbar("All tasks completed.");
+            WebPageTabModels.Clear();
         }
         private async Task<string> getImageUrlFromImagePage_ImageFap(string html)
         {
@@ -224,8 +312,9 @@ namespace WPF_HomeTool.ViewModels
                 DebugAndOutputToStatusbar($"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
                 _logger.LogError(ex, $"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
                 _logger.LogInformation($"HTML内容:\r\n{html}");
+                throw new Exception("无法在ImageFap图片页面找到图片的URL", ex);
             }
-            return string.Empty;
+            //return string.Empty;
             //string albumName = document.QuerySelector("title").InnerHtml;
             //string albumUrl = document.QuerySelector("link[rel=canonical]").GetAttribute("href");
         }
@@ -234,7 +323,7 @@ namespace WPF_HomeTool.ViewModels
         {
             Debug.WriteLine(s);
             StatusText = s;
-            StatusDetailText += s+Environment.NewLine;
+            StatusDetailText += s + Environment.NewLine;
         }
 
     }
