@@ -135,6 +135,13 @@
                                 <TextBlock Text="WebView Scraper"/>
                             </StackPanel>
                         </ListBoxItem>
+                        <!--ConsoleAppPage-->
+                        <ListBoxItem Tag="WPF_HomeTool.Views.ConsoleAppPage" >
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xE756;" />
+                                <TextBlock Text="Console Apps"/>
+                            </StackPanel>
+                        </ListBoxItem>
                         <!--WebServerPage-->
                         <ListBoxItem Tag="WPF_HomeTool.Views.WebServerPage" >
                             <StackPanel Orientation="Horizontal"  >

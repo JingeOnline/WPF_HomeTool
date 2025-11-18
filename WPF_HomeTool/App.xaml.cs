@@ -50,6 +50,8 @@ namespace WPF_HomeTool
                 services.AddSingleton<FilesRenamePageViewModel>();
                 services.AddSingleton<WebViewScraperPage>();
                 services.AddSingleton<WebViewScraperPageViewModel>();
+                services.AddSingleton<ConsoleAppPage>();
+                services.AddSingleton<ConsoleAppPageViewModel>();
                 //services.AddSingleton<ImageFapService>();
 
                 services.AddHostedService<SyncConfigFileService>();
