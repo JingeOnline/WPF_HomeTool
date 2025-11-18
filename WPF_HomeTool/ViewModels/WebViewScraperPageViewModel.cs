@@ -250,6 +250,10 @@ namespace WPF_HomeTool.ViewModels
             OnTabImageStarted?.Invoke();
             while (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.Downloading) > 0)
             {
+                if (taskToWebPageTabModelDic.Count == 0)
+                {
+                    break;
+                }
                 Task<string> completedTask = await Task.WhenAny(taskToWebPageTabModelDic.Keys);
                 WebPageTabModel webPageTabModel = taskToWebPageTabModelDic[completedTask];
                 try
@@ -285,7 +289,7 @@ namespace WPF_HomeTool.ViewModels
                     _logger.LogError(e, "TabControl中解析页面中的图片链接发生异常");
                     taskToWebPageTabModelDic.Remove(completedTask);
                 }
-                //当上面的异常发生后，添加新的任务
+                //即使上面发生异常，通过try catch把旧的任务移除，继续添加新的任务
                 if (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.UnDownload) > 0)
                 {
                     WebImageModel webImageModel = WebImageModels[index];
