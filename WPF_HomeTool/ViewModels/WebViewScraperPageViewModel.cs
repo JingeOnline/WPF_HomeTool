@@ -76,6 +76,10 @@ namespace WPF_HomeTool.ViewModels
         private bool _isHumanValided;
         [ObservableProperty]
         private bool _isNeedHumandValidate;
+        [ObservableProperty]
+        private int _DownloadedImageCount;
+        [ObservableProperty]
+        private int _FailedImageCount;
         public WebViewScraperPageViewModel(ILogger<WebViewScraperPageViewModel> logger)
         {
             _logger = logger;
@@ -184,6 +188,8 @@ namespace WPF_HomeTool.ViewModels
         {
             WebAlbumModels.Clear();
             WebImageModels.Clear();
+            DownloadedImageCount = 0;
+            FailedImageCount = 0;
         }
         [RelayCommand]
         private void LoadUndwonloadWebImageModelsFromSave()
@@ -221,14 +227,7 @@ namespace WPF_HomeTool.ViewModels
             {
                 WebPageTabModels.Add(new WebPageTabModel($"Tab {i}"));
             }
-            //WebPageTabModels = new ObservableCollection<WebPageTabModel>()
-            //{
-            //    new WebPageTabModel("Tab 1"),
-            //    new WebPageTabModel("Tab 2"),
-            //    new WebPageTabModel("Tab 3"),
-            //    new WebPageTabModel("Tab 4"),
-            //    new WebPageTabModel("Tab 5"),
-            //};
+
             Dictionary<Task<string>, WebPageTabModel> taskToWebPageTabModelDic = new Dictionary<Task<string>, WebPageTabModel>();
 
             int index = 0;
@@ -250,6 +249,7 @@ namespace WPF_HomeTool.ViewModels
             OnTabImageStarted?.Invoke();
             while (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.Downloading) > 0)
             {
+                CheckWebImageModelsStatusAndDisplay();
                 if (taskToWebPageTabModelDic.Count == 0)
                 {
                     break;
@@ -264,10 +264,11 @@ namespace WPF_HomeTool.ViewModels
                     DebugAndOutputToStatusbar(webPageTabModel.Name + " 成功获取到图片uri: " + imageUrl);
                     taskToWebPageTabModelDic.Remove(completedTask);
                     //异步下载图片，速度快，但是容易触发人机验证防护
-                    HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
+                    //HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
                     //同步下载图片，速度慢，但是不容易触发人机验证防护
-                    //await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
+                    await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
                 }
+                //检测到需要人工验证时，抛出该异常
                 catch (NotSupportedException nse)
                 {
                     DebugAndOutputToStatusbar(nse.Message);
@@ -276,17 +277,19 @@ namespace WPF_HomeTool.ViewModels
                     {
                         IsHumanValided = false;
                     }
-                    IsNeedHumandValidate= true;
+                    IsNeedHumandValidate = true;
                     while (!IsHumanValided)
                     {
                         await Task.Delay(200);
                     }
+                    webPageTabModel.WebImageModel.DownloadStatus = WebImageDownloadStatus.Failed;
                     taskToWebPageTabModelDic.Remove(completedTask);
                 }
                 catch (Exception e)
                 {
                     DebugAndOutputToStatusbar($"Error: {e.Message}");
                     _logger.LogError(e, "TabControl中解析页面中的图片链接发生异常");
+                    webPageTabModel.WebImageModel.DownloadStatus = WebImageDownloadStatus.Failed;
                     taskToWebPageTabModelDic.Remove(completedTask);
                 }
                 //即使上面发生异常，通过try catch把旧的任务移除，继续添加新的任务
@@ -301,6 +304,7 @@ namespace WPF_HomeTool.ViewModels
 
             }
             await Task.WhenAll(taskToWebPageTabModelDic.Keys);
+            CheckWebImageModelsStatusAndDisplay();
             DebugAndOutputToStatusbar("All tasks completed.");
             WebPageTabModels.Clear();
         }
@@ -327,6 +331,10 @@ namespace WPF_HomeTool.ViewModels
             //string albumUrl = document.QuerySelector("link[rel=canonical]").GetAttribute("href");
         }
 
+        /// <summary>
+        /// 记录到Debug，并且输出到界面信息栏
+        /// </summary>
+        /// <param name="s"></param>
         private void DebugAndOutputToStatusbar(string s)
         {
             Debug.WriteLine(s);
@@ -334,6 +342,18 @@ namespace WPF_HomeTool.ViewModels
             StatusDetailText += s + Environment.NewLine;
         }
 
+        /// <summary>
+        /// 检查当前下载成功和失败的图片数量
+        /// </summary>
+        private void CheckWebImageModelsStatusAndDisplay()
+        {
+            if (WebImageModels != null && WebImageModels.Count > 0)
+            {
+                DownloadedImageCount = WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.Downloaded);
+                FailedImageCount = WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.Failed);
+            }
+            return;
+        }
     }
 }
 

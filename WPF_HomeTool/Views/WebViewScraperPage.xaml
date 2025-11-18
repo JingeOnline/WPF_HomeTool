@@ -44,8 +44,8 @@
                 <MenuItem Header="删除" Icon="{StaticResource IconRemove}" Command="{Binding VM.RemoveSelectedAlbumCommand}"/>
                 <MenuItem Header="清空" Icon="{StaticResource IconClear}" Command="{Binding VM.ClearCommand}"/>
                 <Separator/>
-                <MenuItem Header="保存路径" Icon="{StaticResource IconSave}">
-                    <Button Content="选择路径" VerticalAlignment="Center" Command="{Binding VM.SelectImagesSavePathCommand}"/>
+                <MenuItem Header="设置" Icon="{StaticResource IconSetting}">
+                    <Button Content="选择下载路径" VerticalAlignment="Center" Command="{Binding VM.SelectImagesSavePathCommand}"/>
                     <TextBox Width="280" Text="{Binding VM.ImageSavePath,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
                     <CheckBox Content="为每个相册创建独立文件夹" IsChecked="{Binding VM.IsNeedCreateAlbumFolder,Mode=TwoWay}"/>
                     <Button Content="在资源管理器中打开下载路径" VerticalAlignment="Center" Command="{Binding VM.OpenSaveFolderInFileExplorerCommand}"/>
@@ -140,9 +140,9 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="{Binding VM.StatusText,Mode=OneWay}" VerticalAlignment="Center">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ElementName=StatusBarExpandButton, Path=IsChecked}" Value="True">
@@ -150,8 +150,28 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                    </Grid.Style>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding VM.StatusText,Mode=OneWay}" VerticalAlignment="Center">
+                        <!--<TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=StatusBarExpandButton, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>-->
+                    </TextBlock>
+                    <TextBlock Grid.Column="1" Text="{Binding VM.FailedImageCount,StringFormat=失败数量:{0}}" VerticalAlignment="Center" Margin="4,0" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Column="2" Text="{Binding VM.DownloadedImageCount,StringFormat=下载数量:{0}}" VerticalAlignment="Center" Margin="4,0,48,0" HorizontalAlignment="Right"/>
+                </Grid>
+
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="400">
                     <ScrollViewer.Style>
                         <Style TargetType="ScrollViewer">

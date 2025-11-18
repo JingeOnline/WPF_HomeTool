@@ -51,7 +51,7 @@ namespace WPF_HomeTool.Views
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("开始爬取页面后出现异常，已结束继续爬取\r\n"+ex);
+                Debug.WriteLine("开始爬取页面后出现异常，已结束继续爬取\r\n" + ex);
                 _logger.LogError(ex, "开始爬取页面后出现异常，已结束继续爬取");
             }
         }
