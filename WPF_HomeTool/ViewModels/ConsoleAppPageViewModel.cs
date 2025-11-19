@@ -1,10 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using WPF_HomeTool.Controls;
+using WPF_HomeTool.Helpers;
+using WPF_HomeTool.Models;
 
 namespace WPF_HomeTool.ViewModels
 {
@@ -15,121 +20,175 @@ namespace WPF_HomeTool.ViewModels
         private string _userCommandText;
         [ObservableProperty]
         private string _consoleOutputText;
+        [ObservableProperty]
+        private string _selectedApp;
+        [ObservableProperty]
+        private Visibility _wizardPanelVisibility = Visibility.Visible;
+        [ObservableProperty]
+        private string _YouTubeDownloadUrl;
+        [ObservableProperty]
+        private string _YouTubeVideoDownloadPath;
+        partial void OnYouTubeVideoDownloadPathChanged(string? oldValue, string newValue)
+        {
+            if (oldValue != newValue)
+            {
+                ConfigHelper.WriteKeyValue("YoutubeDownloadDirectory", newValue);
+            }
+        }
+        [ObservableProperty]
+        private ObservableCollection<RadioButtonItemModel> _youtubeRadioButtons = new ObservableCollection<RadioButtonItemModel>();
 
-        private Process cmd;
+        private Dictionary<string, string> _youtubeDownloadModes = new Dictionary<string, string>
+        {
+            {"默认webm视频", "$ExePath -P \"$DownloadPath\" $VideoUrl --cookies-from-browser chrome"},
+            {"MP4视频", "$ExePath -P \"$DownloadPath\" -f \"bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best\" $VideoUrl --cookies-from-browser chrome" },
+            {"m4a音频", "$ExePath -P \"$DownloadPath\" -f\"bestaudio[ext=m4a]\" $VideoUrl --cookies-from-browser chrome"},
+            {"webm视频+str字幕", "$ExePath -P \"$DownloadPath\" --write-sub --convert-subs \"srt\" --sub-lang $Language $VideoUrl --cookies-from-browser chrome"},
+            {"MP4视频+srt字幕","$ExePath -P \"$DownloadPath\" -f \"bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best\" --write-sub --convert-subs \"srt\" --sub-lang $Language $VideoUrl --cookies-from-browser chrome"},
+            {"仅下载srt字幕" ,"$ExePath -P \"$DownloadPath\" --skip-download --write-sub --convert-subs \"srt\" --sub-lang $Language $VideoUrl --cookies-from-browser chrome"},
+            {"模拟VR客户端下载8K视频","$ExePath -P \"$DownloadPath\" $VideoUrl --extractor-arg \"youtube:player_client=android_vr\" -S res:4320 --cookies-from-browser chrome" },
+            {"查看视频分辨率列表","$ExePath -F $VideoUrl --list-formats --cookies-from-browser chrome" }
+        };
+
+        private Process powershell;
+        private List<string> resultLines = new List<string>();
         public ConsoleAppPageViewModel(ILogger<ConsoleAppPageViewModel> logger)
         {
             _logger = logger;
             initialProcess();
+            foreach (var mode in _youtubeDownloadModes)
+            {
+                YoutubeRadioButtons.Add(new RadioButtonItemModel(mode.Key, mode.Value));
+            }
+            YoutubeRadioButtons[0].IsChecked = true;
+            YouTubeVideoDownloadPath = ConfigHelper.ReadKeyValue("YoutubeDownloadDirectory")!;
         }
 
         [RelayCommand]
         private void RunUserInput()
         {
-
-            ExecutePowershellCommand();
-
-            //string result = ExecuteCmdCommand(UserCommandText);
-            //ConsoleOutputText=result;
-            //_logger.LogInformation(result);
+            //if (CheckAppPath())
+            //{
+            resultLines.Clear();
+            ExecuteUserInputIntoPowershell();
+            //}
         }
+        [RelayCommand]
+        private void ClearConsoleOutputText()
+        {
+            ConsoleOutputText = string.Empty;
+        }
+        [RelayCommand]
+        private void SetWizardPanelVisibility()
+        {
+            WizardPanelVisibility = WizardPanelVisibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        }
+        [RelayCommand]
+        private void CreateCommandLine()
+        {
+            if (CheckAppPath() && CheckYouTubeDownloadPath())
+            {
+                string commandLine = YoutubeRadioButtons.First(x => x.IsChecked).Command;
+                commandLine = commandLine.Replace("$ExePath", ConfigHelper.ReadKeyValue("yt-dlp_Path"));
+                commandLine = commandLine.Replace("$DownloadPath", ConfigHelper.ReadKeyValue("YoutubeDownloadDirectory"));
+                if (!string.IsNullOrEmpty(YouTubeDownloadUrl))
+                {
+                    commandLine = commandLine.Replace("$VideoUrl", YouTubeDownloadUrl);
+                }
+                UserCommandText = commandLine;
+            }
 
+        }
+        [RelayCommand]
+        private void SelectYoutubeVideosSavePath()
+        {
+            using (CommonOpenFileDialog dialog = new CommonOpenFileDialog())
+            {
+                dialog.IsFolderPicker = true; //Select Folder Only
+                dialog.Multiselect = false;
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    YouTubeVideoDownloadPath = dialog.FileName;
+                }
+            }
+        }
+        [RelayCommand]
+        private void OpenDownloadFolderInFileExplorer()
+        {
+            if (!string.IsNullOrEmpty(YouTubeVideoDownloadPath) && Directory.Exists(YouTubeVideoDownloadPath))
+            {
+                string windowsFormatPath = Path.GetFullPath(YouTubeVideoDownloadPath);
+                System.Diagnostics.Process.Start("explorer.exe", windowsFormatPath);
+            }
+        }
         private void initialProcess()
         {
-            cmd = new Process();
-            cmd.StartInfo.FileName = "powershell.exe";
-            cmd.StartInfo.RedirectStandardInput = true;
-            cmd.StartInfo.RedirectStandardOutput = true;
-            cmd.StartInfo.RedirectStandardError = true;
-            cmd.StartInfo.CreateNoWindow = true;
-            cmd.StartInfo.UseShellExecute = false;
+            powershell = new Process();
+            powershell.StartInfo.FileName = "powershell.exe";
+            powershell.StartInfo.RedirectStandardInput = true;
+            powershell.StartInfo.RedirectStandardOutput = true;
+            powershell.StartInfo.RedirectStandardError = true;
+            powershell.StartInfo.CreateNoWindow = true;
+            powershell.StartInfo.UseShellExecute = false;
 
-            cmd.Start();
+            powershell.Start();
             //通过事件处理函数的方式获得命令行中的反馈结果
-            cmd.OutputDataReceived += (sender, e) => { 
-                ConsoleOutputText += e.Data+Environment.NewLine;
+            powershell.OutputDataReceived += (sender, e) =>
+            {
+                ConsoleOutputText += e.Data + Environment.NewLine;
+                if (e.Data != null)
+                {
+                    resultLines.Add(e.Data);
+                }
                 //Debug.WriteLine(e.Data);
             };
-            cmd.ErrorDataReceived += (sender, e) => { 
-                ConsoleOutputText += e.Data + Environment.NewLine; 
+            powershell.ErrorDataReceived += (sender, e) =>
+            {
+                ConsoleOutputText += e.Data + Environment.NewLine;
             };
 
-            cmd.BeginOutputReadLine();
-            cmd.BeginErrorReadLine();
+            powershell.BeginOutputReadLine();
+            powershell.BeginErrorReadLine();
         }
 
-        private void ExecutePowershellCommand()
+        private void ExecuteUserInputIntoPowershell()
         {
             string s = UserCommandText;
-            cmd.StandardInput.WriteLine(s);
+            powershell.StandardInput.WriteLine(s);
             //如果用户输入exit，则关闭cmd进程
             if (s == "exit")
             {
-                cmd.StandardInput.Close();
-                cmd.WaitForExit();
+                powershell.StandardInput.Close();
+                powershell.WaitForExit();
             }
         }
 
-        /// <summary>
-        /// 执行CMD命令并返回其输出结果。
-        /// </summary>
-        /// <param name="command">要执行的命令字符串（例如："ipconfig" 或 "dir"）。</param>
-        /// <returns>命令的标准输出和标准错误输出。</returns>
-        private string ExecuteCmdCommand(string command)
+        private bool CheckAppPath()
         {
-            // 使用 /C 参数让 cmd 在执行完命令后自动关闭
-            string fullCommand = $"/C {command}";
-
-            // 1. 配置进程启动信息
-            ProcessStartInfo startInfo = new ProcessStartInfo
+            bool isExist = false;
+            if (SelectedApp == "yt-dlp")
             {
-                FileName = "cmd.exe",
-                Arguments = fullCommand,
-                // 必须设为 false，否则无法重定向流
-                UseShellExecute = false,
-                // 必须设为 true，才能捕获输出
-                RedirectStandardOutput = true,
-                // 如果程序有错误输出，也进行捕获
-                RedirectStandardError = true,
-                // 不显示CMD的黑色窗口
-                CreateNoWindow = true,
-                // 设置编码，确保中文等字符正确显示
-                StandardOutputEncoding = Encoding.GetEncoding("UTF-8"),
-                StandardErrorEncoding = Encoding.GetEncoding("UTF-8")
-            };
-
-            // 2. 创建并启动进程
-            using (Process process = new Process())
-            {
-                process.StartInfo = startInfo;
-
-                try
+                isExist = File.Exists(ConfigHelper.ReadKeyValue("yt-dlp_Path"));
+                if (!isExist)
                 {
-                    process.Start();
-
-                    // 3. 同步读取输出和错误流
-                    // ReadToEnd() 会等待进程执行完毕并读取全部输出
-                    string output = process.StandardOutput.ReadToEnd();
-                    string error = process.StandardError.ReadToEnd();
-
-                    // 等待进程退出
-                    process.WaitForExit();
-
-                    // 4. 组合结果
-                    if (string.IsNullOrEmpty(error))
-                    {
-                        return $"命令：{command}\n\n执行成功，输出结果：\n{output}";
-                    }
-                    else
-                    {
-                        return $"命令：{command}\n\n执行失败，错误信息：\n{error}\n\n标准输出（可能包含部分结果）：\n{output}";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    return $"执行命令时发生异常：{ex.Message}";
+                    ModernMessageBox.Show("无法找到yt-dlp.exe，请先在设置中配置正确的yt-dlp路径。", "错误", Controls.MessageBoxButton.OK, Controls.MessageBoxImage.Error);
                 }
             }
+            return isExist;
+        }
+
+        private bool CheckYouTubeDownloadPath()
+        {
+            bool isExist = false;
+            if (SelectedApp == "yt-dlp")
+            {
+                isExist = Directory.Exists(ConfigHelper.ReadKeyValue("YoutubeDownloadDirectory"));
+                if (!isExist)
+                {
+                    ModernMessageBox.Show("下载路径不存在，请在设置中重新选择保存路径", "错误", Controls.MessageBoxButton.OK, Controls.MessageBoxImage.Error);
+                }
+            }
+            return isExist;
         }
     }
 }

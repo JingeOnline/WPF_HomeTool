@@ -110,9 +110,12 @@ namespace WPF_HomeTool.Controls
             var button = new System.Windows.Controls.Button
             {
                 Content = content,
+                Width=60,
                 Margin = new Thickness(8, 0, 0, 0),
                 Style = isPrimary ?
-                    (Style)FindResource("ModernButtonStyle") :
+                    //(Style)FindResource("ModernButtonStyle") :
+                    //WPF新的按钮样式自带AccentButtonStyle
+                    (Style)FindResource("AccentButtonStyle") :
                     (Style)FindResource("SecondaryButtonStyle")
             };
 
@@ -122,7 +125,7 @@ namespace WPF_HomeTool.Controls
                 DialogResult = true;
                 Close();
             };
-
+            if (isPrimary) { button.IsDefault = true; }
             ButtonPanel.Children.Add(button);
         }
 

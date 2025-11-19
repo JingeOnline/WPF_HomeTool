@@ -5,10 +5,14 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:WPF_HomeTool.Views"
       xmlns:controls="clr-namespace:WPF_HomeTool.Controls"
+      xmlns:behaviors="clr-namespace:WPF_HomeTool.Behaviors"
+      xmlns:converters="clr-namespace:WPF_HomeTool.Converters"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="ConsoleAppPage">
-
+    <Page.Resources>
+        <converters:StringEqualityConverter x:Key="StringEqualityConverter"/>
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -21,24 +25,90 @@
             <controls:PageHeader Grid.Row="0" Title="Console Apps" Description="执行各种常用命令行工具" />
         </Grid>
         <Border Grid.Row="1" Style="{StaticResource MenuBorder}">
-            <Menu>
-                <ComboBox Width="140" Margin="0" Padding="0" SelectedValuePath="Content"
+            <StackPanel>
+                <Menu>
+                    <ComboBox Width="140" Margin="0" Padding="0" SelectedValuePath="Content"
                           SelectedValue="{Binding VM.SelectedApp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                    <ComboBoxItem Content="yt-dlp" IsSelected="True"/>
-                    <ComboBoxItem Content="Other1"/>
-                    <ComboBoxItem Content="Other2"/>
-                </ComboBox>
-                <MenuItem x:Name="StartMenuItem" Header="执行" Icon="{StaticResource IconReturnKey}" Command="{Binding VM.RunUserInputCommand}"/>
-            </Menu>
+                        <ComboBoxItem Content="yt-dlp" IsSelected="True"/>
+                        <ComboBoxItem Content="Other1"/>
+                        <ComboBoxItem Content="Other2"/>
+                    </ComboBox>
+                    <MenuItem Header="显示向导" Icon="{StaticResource IconSettingWizard}" Command="{Binding VM.SetWizardPanelVisibilityCommand}"/>
+                    <MenuItem Header="设置" Icon="{StaticResource IconSetting}">
+                        <Button Content="选择下载路径" VerticalAlignment="Center" Command="{Binding VM.SelectYoutubeVideosSavePathCommand}"/>
+                        <TextBox Width="280" Text="{Binding VM.YouTubeVideoDownloadPath,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                        <Button Content="在资源管理器中打开下载路径" VerticalAlignment="Center" Command="{Binding VM.OpenDownloadFolderInFileExplorerCommand}"/>
+                    </MenuItem>
+                    <MenuItem Header="清除输出" Icon="{StaticResource IconClear}" Command="{Binding VM.ClearConsoleOutputTextCommand}"/>
+                    <MenuItem Header="执行 (Ctrl+Enter)" Icon="{StaticResource IconReturnKey}" Command="{Binding VM.RunUserInputCommand}"/>
+                </Menu>
+                <Grid Margin="8" Visibility="{Binding VM.WizardPanelVisibility,Mode=OneWay}">
+                    <GroupBox Header="yt-dlp 下载向导" Padding="0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="下载链接：" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBox Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                 Text="{Binding VM.YouTubeDownloadUrl,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="下载模式：" Grid.Row="1" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                            <ItemsControl ItemsSource="{Binding VM.YoutubeRadioButtons}" Grid.Row="1" Grid.Column="1">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="4" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton Content="{Binding Name}"  GroupName="MyOptionsGroup" Margin="4,4,0,0"
+                                                     IsChecked="{Binding IsChecked,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}">
+                                        </RadioButton>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button Grid.ColumnSpan="2" Grid.Row="3" Content="生成指令" HorizontalAlignment="Center"
+                                    Command="{Binding VM.CreateCommandLineCommand}" Style="{DynamicResource AccentButtonStyle}"/>
+                        </Grid>
+                    </GroupBox>
+
+                </Grid>
+            </StackPanel>
         </Border>
         <Border Grid.Row="2" Style="{StaticResource MenuBorder}" Margin="0,8">
-            <TextBox HorizontalAlignment="Stretch" TextWrapping="Wrap" MaxHeight="80" 
-                     VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Text="{Binding VM.UserCommandText,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+            <StackPanel Orientation="Vertical">
+                <TextBox HorizontalAlignment="Stretch" TextWrapping="Wrap" MaxHeight="80" FontFamily="Cascadia Code"
+                     VerticalScrollBarVisibility="Auto" AcceptsReturn="True" 
+                     Text="{Binding VM.UserCommandText,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding VM.RunUserInputCommand}" Gesture="Ctrl+Return" />
+                    </TextBox.InputBindings>
+                </TextBox>
+            </StackPanel>
         </Border>
         <Border Grid.Row="3" Style="{StaticResource MenuBorder}" Margin="0,0,0,8">
             <TextBox HorizontalAlignment="Stretch" TextWrapping="Wrap"  
-                     VerticalScrollBarVisibility="Auto" AcceptsReturn="True" IsReadOnly="True"
-                     Text="{Binding VM.ConsoleOutputText}"/>
+                     FontFamily="Cascadia Code" Background="Black" Foreground="White" CaretBrush="LightGreen" SelectionBrush="DodgerBlue"
+                     VerticalScrollBarVisibility="Visible" AcceptsReturn="True" IsReadOnly="True"
+                     Text="{Binding VM.ConsoleOutputText}" behaviors:TextBoxScrollBehavior.AutoScrollToEnd="True" Padding="8">
+                <TextBox.Style>
+                    <Style TargetType="TextBox">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="Black" />
+                                <Setter Property="Foreground" Value="White" />
+                                <!--<Setter Property="BorderBrush" Value="LimeGreen" />-->
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBox.Style>
+            </TextBox>
         </Border>
         <Border Grid.Row="4" Style="{StaticResource MenuBorder}" Padding="8">
             <TextBlock>Status Info:</TextBlock>

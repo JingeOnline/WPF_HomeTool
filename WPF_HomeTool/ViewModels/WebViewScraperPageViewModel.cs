@@ -16,6 +16,7 @@ using System.Windows.Media.Media3D;
 using WPF_HomeTool.Helpers;
 using WPF_HomeTool.Models;
 using WPF_HomeTool.Services;
+//using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 using static System.Net.WebRequestMethods;
 using Visibility = System.Windows.Visibility;
 
@@ -60,16 +61,20 @@ namespace WPF_HomeTool.ViewModels
         private ObservableCollection<int> _tabAmountCollection;
         [ObservableProperty]
         private bool _isNeedCreateAlbumFolder;
-
-        partial void OnIsNeedCreateAlbumFolderChanged(bool value)
+        partial void OnIsNeedCreateAlbumFolderChanged(bool oldValue, bool newValue)
         {
-            ConfigHelper.WriteKeyValue("IsNeedCreateAlbumFolder", value ? "True" : "False");
+            if (oldValue != newValue)
+            {
+                ConfigHelper.WriteKeyValue("IsNeedCreateAlbumFolder", newValue.ToString());
+            }
         }
         [ObservableProperty]
         private string _imageSavePath;
-        partial void OnImageSavePathChanged(string value)
-        {
-            ConfigHelper.WriteKeyValue("ImageSavePath", value);
+        partial void OnImageSavePathChanged(string? oldValue, string newValue)
+        { if (oldValue != newValue)
+            {
+                ConfigHelper.WriteKeyValue("ImageSavePath", newValue);
+            }
         }
 
         [ObservableProperty]
@@ -118,7 +123,7 @@ namespace WPF_HomeTool.ViewModels
             }
         }
         [RelayCommand]
-        private async void AddAlbumUri()
+        private async Task AddAlbumUri()
         {
             if (Uri.IsWellFormedUriString(UserInputAlbumUri, UriKind.Absolute))
             {
@@ -184,7 +189,7 @@ namespace WPF_HomeTool.ViewModels
             }
         }
         [RelayCommand]
-        private async void Clear()
+        private void Clear()
         {
             WebAlbumModels.Clear();
             WebImageModels.Clear();
@@ -315,8 +320,8 @@ namespace WPF_HomeTool.ViewModels
                 IConfiguration config = Configuration.Default;
                 IBrowsingContext context = BrowsingContext.New(config);
                 IDocument document = await context.OpenAsync(req => req.Content(html));
-                IElement imageElement = document.QuerySelector("div.image-wrapper>span>img");
-                string pageUrl = imageElement.GetAttribute("src");
+                IElement imageElement = document.QuerySelector("div.image-wrapper>span>img")!;
+                string pageUrl = imageElement.GetAttribute("src")!;
                 return pageUrl;
             }
             catch (Exception ex)
