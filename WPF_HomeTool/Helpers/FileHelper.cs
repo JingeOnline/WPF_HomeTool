@@ -376,5 +376,17 @@ namespace WPF_HomeTool.Helpers
                 File.WriteAllLines(filePath, updatedLines);
             }
         }
+
+        /// <summary>
+        /// 删除文本文件中的所有内容
+        /// </summary>
+        /// <param name="filePath"></param>
+        public static void RemoveAllFromFile(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                using (var fs = File.Create(filePath)) { }
+            }
+        }
     }
 }

@@ -48,7 +48,8 @@
                     <Button Content="选择下载路径" VerticalAlignment="Center" Command="{Binding VM.SelectImagesSavePathCommand}"/>
                     <TextBox Width="280" Text="{Binding VM.ImageSavePath,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
                     <CheckBox Content="为每个相册创建独立文件夹" IsChecked="{Binding VM.IsNeedCreateAlbumFolder,Mode=TwoWay}"/>
-                    <Button Content="在资源管理器中打开下载路径" VerticalAlignment="Center" Command="{Binding VM.OpenSaveFolderInFileExplorerCommand}"/>
+                    <Button Content="清除历史记录中未下载的图片" Command="{Binding VM.RemoveAllUndownloadRecordsCommand}"/>
+                    <Button Content="在资源管理器中打开下载路径"  Command="{Binding VM.OpenSaveFolderInFileExplorerCommand}"/>
                 </MenuItem>
                 <MenuItem Header="重载失败" Icon="{StaticResource IconRefresh}" Command="{Binding VM.LoadUndwonloadWebImageModelsFromSaveCommand}">
                 </MenuItem>

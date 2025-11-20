@@ -219,6 +219,12 @@ namespace WPF_HomeTool.ViewModels
             }
         }
         [RelayCommand]
+        private void RemoveAllUndownloadRecords()
+        {
+            string path = ConfigHelper.ReadKeyValue("ImageFapUndownloadFilePath");
+            FileHelper.RemoveAllFromFile(path);
+        }
+        [RelayCommand]
         private void HumandValidateCompleted()
         {
             IsHumanValided = true;
