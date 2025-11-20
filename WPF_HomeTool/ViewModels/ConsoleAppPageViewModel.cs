@@ -36,19 +36,41 @@ namespace WPF_HomeTool.ViewModels
             }
         }
         [ObservableProperty]
-        private ObservableCollection<RadioButtonItemModel> _youtubeRadioButtons = new ObservableCollection<RadioButtonItemModel>();
-
-        private Dictionary<string, string> _youtubeDownloadModes = new Dictionary<string, string>
+        private ObservableCollection<YtdlpRadioButtonModel> _youtubeRadioButtons = new ObservableCollection<YtdlpRadioButtonModel>()
         {
-            {"默认webm视频", "$ExePath -P \"$DownloadPath\" $VideoUrl --cookies-from-browser chrome"},
-            {"MP4视频", "$ExePath -P \"$DownloadPath\" -f \"bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best\" $VideoUrl --cookies-from-browser chrome" },
-            {"m4a音频", "$ExePath -P \"$DownloadPath\" -f\"bestaudio[ext=m4a]\" $VideoUrl --cookies-from-browser chrome"},
-            {"webm视频+str字幕", "$ExePath -P \"$DownloadPath\" --write-sub --convert-subs \"srt\" --sub-lang $Language $VideoUrl --cookies-from-browser chrome"},
-            {"MP4视频+srt字幕","$ExePath -P \"$DownloadPath\" -f \"bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best\" --write-sub --convert-subs \"srt\" --sub-lang $Language $VideoUrl --cookies-from-browser chrome"},
-            {"仅下载srt字幕" ,"$ExePath -P \"$DownloadPath\" --skip-download --write-sub --convert-subs \"srt\" --sub-lang $Language $VideoUrl --cookies-from-browser chrome"},
-            {"模拟VR客户端下载8K视频","$ExePath -P \"$DownloadPath\" $VideoUrl --extractor-arg \"youtube:player_client=android_vr\" -S res:4320 --cookies-from-browser chrome" },
-            {"查看视频分辨率列表","$ExePath -F $VideoUrl --list-formats --cookies-from-browser chrome" }
+            new YtdlpRadioButtonModel("默认webm视频", """$ExePath -P "$DownloadPath" $VideoUrl --cookies-from-browser chrome""",true),
+            new YtdlpRadioButtonModel("MP4视频", """$ExePath -P "$DownloadPath" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" $VideoUrl --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("仅下载m4a音频", """$ExePath -P "$DownloadPath" -f "bestaudio[ext=m4a]" $VideoUrl --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("下载视频后提取音轨并转换成MP3", """$ExePath -P "$DownloadPath" -x --audio-format mp3 $VideoUrl --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("webm视频+str字幕", """$ExePath -P "$DownloadPath" --write-sub --convert-subs srt $Language $VideoUrl --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("MP4视频+srt字幕","""$ExePath -P "$DownloadPath" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --write-sub --convert-subs srt $Language $VideoUrl --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("仅下载srt字幕" ,"""$ExePath -P "$DownloadPath" --no-check-certificates --skip-download --write-sub --convert-subs srt $Language $VideoUrl --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("模拟VR客户端下载8K视频","""$ExePath -P "$DownloadPath" $VideoUrl --extractor-arg "youtube:player_client=android_vr" -S res:4320 --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("查看视频分辨率列表","""$ExePath -F $VideoUrl --list-formats --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("yt-dlp在线升级","""$ExePath -U"""),
         };
+        [ObservableProperty]
+        private ObservableCollection<YtdlpSubtitleLanguageRadioButtonModel> _languageRadioButtons= new ObservableCollection<YtdlpSubtitleLanguageRadioButtonModel>
+        {
+            new YtdlpSubtitleLanguageRadioButtonModel("所有语言", "--all-subs",true),
+            new YtdlpSubtitleLanguageRadioButtonModel("英语", "--sub-lang en.*"),
+            new YtdlpSubtitleLanguageRadioButtonModel("中文（简体）", "--sub-lang zh-Hans"),
+            new YtdlpSubtitleLanguageRadioButtonModel("中文（繁体）", "--sub-lang zh-Hant"),
+        };
+        [ObservableProperty]
+        private bool _IsLanguagePanelVisiable;
+
+        //private Dictionary<string, string> _youtubeDownloadModes = new Dictionary<string, string>
+        //{
+        //    {"默认webm视频", "$ExePath -P \"$DownloadPath\" $VideoUrl --cookies-from-browser chrome"},
+        //    {"MP4视频", "$ExePath -P \"$DownloadPath\" -f \"bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best\" $VideoUrl --cookies-from-browser chrome" },
+        //    {"m4a音频", "$ExePath -P \"$DownloadPath\" -f\"bestaudio[ext=m4a]\" $VideoUrl --cookies-from-browser chrome"},
+        //    {"webm视频+str字幕", "$ExePath -P \"$DownloadPath\" --write-sub --convert-subs \"srt\" --sub-lang $Language $VideoUrl --cookies-from-browser chrome"},
+        //    {"MP4视频+srt字幕","$ExePath -P \"$DownloadPath\" -f \"bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best\" --write-sub --convert-subs \"srt\" --sub-lang $Language $VideoUrl --cookies-from-browser chrome"},
+        //    {"仅下载srt字幕" ,"$ExePath -P \"$DownloadPath\" --skip-download --write-sub --convert-subs \"srt\" --sub-lang $Language $VideoUrl --cookies-from-browser chrome"},
+        //    {"模拟VR客户端下载8K视频","$ExePath -P \"$DownloadPath\" $VideoUrl --extractor-arg \"youtube:player_client=android_vr\" -S res:4320 --cookies-from-browser chrome" },
+        //    {"查看视频分辨率列表","$ExePath -F $VideoUrl --list-formats --cookies-from-browser chrome" }
+        //};
 
         private Process powershell;
         private List<string> resultLines = new List<string>();
@@ -56,14 +78,26 @@ namespace WPF_HomeTool.ViewModels
         {
             _logger = logger;
             initialProcess();
-            foreach (var mode in _youtubeDownloadModes)
-            {
-                YoutubeRadioButtons.Add(new RadioButtonItemModel(mode.Key, mode.Value));
-            }
-            YoutubeRadioButtons[0].IsChecked = true;
+            //foreach (var mode in _youtubeDownloadModes)
+            //{
+            //    YoutubeRadioButtons.Add(new YtdlpRadioButtonModel(mode.Key, mode.Value));
+            //}
+            //YoutubeRadioButtons[0].IsChecked = true;
             YouTubeVideoDownloadPath = ConfigHelper.ReadKeyValue("YoutubeDownloadDirectory")!;
         }
-
+        [RelayCommand]
+        private void CheckSelectedMode()
+        {
+            var mode = YoutubeRadioButtons.First(x => x.IsChecked);
+            if (mode.Name == "webm视频+str字幕" || mode.Name == "MP4视频+srt字幕" || mode.Name == "仅下载srt字幕")
+            {
+                IsLanguagePanelVisiable = true;
+            }
+            else
+            {
+                IsLanguagePanelVisiable = false;
+            }
+        }
         [RelayCommand]
         private void RunUserInput()
         {
@@ -88,12 +122,18 @@ namespace WPF_HomeTool.ViewModels
         {
             if (CheckAppPath() && CheckYouTubeDownloadPath())
             {
-                string commandLine = YoutubeRadioButtons.First(x => x.IsChecked).Command;
+                var mode = YoutubeRadioButtons.First(x => x.IsChecked);
+                string commandLine = mode.Command;
                 commandLine = commandLine.Replace("$ExePath", ConfigHelper.ReadKeyValue("yt-dlp_Path"));
                 commandLine = commandLine.Replace("$DownloadPath", ConfigHelper.ReadKeyValue("YoutubeDownloadDirectory"));
                 if (!string.IsNullOrEmpty(YouTubeDownloadUrl))
                 {
                     commandLine = commandLine.Replace("$VideoUrl", YouTubeDownloadUrl);
+                }
+                if(mode.Name == "webm视频+str字幕" || mode.Name == "MP4视频+srt字幕" || mode.Name == "仅下载srt字幕")
+                {
+                    string language= LanguageRadioButtons.First(x => x.IsChecked).Command;
+                    commandLine = commandLine.Replace("$Language", language);
                 }
                 UserCommandText = commandLine;
             }
