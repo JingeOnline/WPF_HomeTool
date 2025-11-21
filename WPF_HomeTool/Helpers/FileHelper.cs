@@ -388,5 +388,23 @@ namespace WPF_HomeTool.Helpers
                 using (var fs = File.Create(filePath)) { }
             }
         }
+
+        public static void CreateFileWithDirectoryIfNotExist(string path)
+        {
+            // 1. Get the directory part of the path
+            string directory = Path.GetDirectoryName(path);
+
+            // 2. Create the directory if it's missing
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            // 3. Create the file if it's missing
+            if (!File.Exists(path))
+            {
+                using (File.Create(path)) { }
+            }
+        }
     }
 }

@@ -17,7 +17,7 @@ using WPF_HomeTool.Helpers;
 using WPF_HomeTool.Models;
 using WPF_HomeTool.Services;
 //using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
-using static System.Net.WebRequestMethods;
+//using static System.Net.WebRequestMethods;
 using Visibility = System.Windows.Visibility;
 
 namespace WPF_HomeTool.ViewModels
@@ -71,7 +71,8 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private string _imageSavePath;
         partial void OnImageSavePathChanged(string? oldValue, string newValue)
-        { if (oldValue != newValue)
+        {
+            if (oldValue != newValue)
             {
                 ConfigHelper.WriteKeyValue("ImageSavePath", newValue);
             }
@@ -131,6 +132,7 @@ namespace WPF_HomeTool.ViewModels
                 UserInputAlbumUri = UserInputAlbumUri.Trim();
                 try
                 {
+                    imageFapService.CheckSaveFileExist();
                     if (imageFapService.IsAlbumUrlAlreadyDownloaded(UserInputAlbumUri))
                     {
                         DebugAndOutputToStatusbar($"相册地址已存在于历史记录中，跳过: {UserInputAlbumUri}");

@@ -46,11 +46,11 @@ namespace WPF_HomeTool.Services
                 try
                 {
                     FileHelper.AppendLineToFile(_imageFapDownloadAlbumUrlPath, webAlbumModel.AlbumUrl);
-                    FileHelper.AppendModelsToCsv(webAlbumModel.WebImageModelList,_imageFapUnDownloadImageFilesPath);
+                    FileHelper.AppendModelsToCsv(webAlbumModel.WebImageModelList, _imageFapUnDownloadImageFilesPath);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    _logger.Error(ex,"写入历史记录时发生异常");
+                    _logger.Error(ex, "写入历史记录时发生异常");
                     Debug.WriteLine(ex);
                 }
             }
@@ -153,6 +153,11 @@ namespace WPF_HomeTool.Services
         {
             string line = FileHelper.ConvertModelToCsvLine(webImageModel);
             FileHelper.RemoveLineFromFile_ThreadSafe(_imageFapUnDownloadImageFilesPath, line);
+        }
+        public void CheckSaveFileExist()
+        {
+            FileHelper.CreateFileWithDirectoryIfNotExist(_imageFapDownloadAlbumUrlPath);
+            FileHelper.CreateFileWithDirectoryIfNotExist(_imageFapUnDownloadImageFilesPath);
         }
     }
 }
