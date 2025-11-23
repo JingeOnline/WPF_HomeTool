@@ -44,6 +44,10 @@ namespace WPF_HomeTool.ViewModels
         private GridLength _DataGridLength = new GridLength(2, GridUnitType.Star);
         [ObservableProperty]
         private string _userInputAlbumUri;
+        partial void OnUserInputAlbumUriChanging(string value)
+        {
+            value = value.Trim();
+        }
         [ObservableProperty]
         private string _statusText = String.Empty;
         [ObservableProperty]
@@ -171,6 +175,10 @@ namespace WPF_HomeTool.ViewModels
                         WebImageModels.Add(imageModel);
                     }
                 }
+            }
+            else
+            {
+                DebugAndOutputToStatusbar("输入的URL不是有效的URL");
             }
         }
         [RelayCommand]
