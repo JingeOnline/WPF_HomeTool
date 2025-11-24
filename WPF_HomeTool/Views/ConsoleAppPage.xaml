@@ -33,14 +33,29 @@
                         <ComboBoxItem Content="Other1"/>
                         <ComboBoxItem Content="Other2"/>
                     </ComboBox>
-                    <MenuItem Header="显示向导" Icon="{StaticResource IconSettingWizard}" Command="{Binding VM.SetWizardPanelVisibilityCommand}"/>
-                    <MenuItem Header="设置" Icon="{StaticResource IconSetting}">
+                    <MenuItem Header="显示向导" Command="{Binding VM.SetWizardPanelVisibilityCommand}">
+                        <MenuItem.Icon>
+                            <ContentPresenter ContentTemplate="{StaticResource IconSettingWizard}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="设置">
+                        <MenuItem.Icon>
+                            <ContentPresenter ContentTemplate="{StaticResource IconSetting}" />
+                        </MenuItem.Icon>
                         <Button Content="选择下载路径" VerticalAlignment="Center" Command="{Binding VM.SelectYoutubeVideosSavePathCommand}"/>
                         <TextBox Width="280" Text="{Binding VM.YouTubeVideoDownloadPath,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
                         <Button Content="在资源管理器中打开下载路径" VerticalAlignment="Center" Command="{Binding VM.OpenDownloadFolderInFileExplorerCommand}"/>
                     </MenuItem>
-                    <MenuItem Header="清除输出" Icon="{StaticResource IconClear}" Command="{Binding VM.ClearConsoleOutputTextCommand}"/>
-                    <MenuItem Header="执行 (Ctrl+Enter)" Icon="{StaticResource IconReturnKey}" Command="{Binding VM.RunUserInputCommand}"/>
+                    <MenuItem Header="清除输出" Command="{Binding VM.ClearConsoleOutputTextCommand}">
+                        <MenuItem.Icon>
+                            <ContentPresenter ContentTemplate="{StaticResource IconClear}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="执行 (Ctrl+Enter)" Command="{Binding VM.RunUserInputCommand}">
+                        <MenuItem.Icon>
+                            <ContentPresenter ContentTemplate="{StaticResource IconReturnKey}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </Menu>
                 <Grid Margin="8" Visibility="{Binding VM.WizardPanelVisibility,Mode=OneWay}">
                     <GroupBox Header="yt-dlp 下载向导" Padding="0,8">

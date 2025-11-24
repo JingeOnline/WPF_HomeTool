@@ -40,25 +40,48 @@
                         <KeyBinding Key="Enter" Command="{Binding VM.AddAlbumUriCommand}"/>
                     </TextBox.InputBindings>
                 </TextBox>
-                <MenuItem Header="添加" Icon="{StaticResource IconAdd}" Command="{Binding VM.AddAlbumUriCommand}"/>
-                <MenuItem Header="删除" Icon="{StaticResource IconRemove}" Command="{Binding VM.RemoveSelectedAlbumCommand}"/>
-                <MenuItem Header="清空" Icon="{StaticResource IconClear}" Command="{Binding VM.ClearCommand}"/>
-                <Separator/>
-                <MenuItem Header="设置" Icon="{StaticResource IconSetting}">
-                    <Button Content="选择下载路径" VerticalAlignment="Center" Command="{Binding VM.SelectImagesSavePathCommand}"/>
-                    <TextBox Width="280" Text="{Binding VM.ImageSavePath,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
-                    <CheckBox Content="为每个相册创建独立文件夹" IsChecked="{Binding VM.IsNeedCreateAlbumFolder,Mode=TwoWay}"/>
-                    <Button Content="清除历史记录中未下载的图片" Command="{Binding VM.RemoveAllUndownloadRecordsCommand}"/>
-                    <Button Content="在资源管理器中打开下载路径"  Command="{Binding VM.OpenSaveFolderInFileExplorerCommand}"/>
+                <MenuItem Header="添加" Command="{Binding VM.AddAlbumUriCommand}">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconAdd}" />
+                    </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="重载失败" Icon="{StaticResource IconRefresh}" Command="{Binding VM.LoadUndwonloadWebImageModelsFromSaveCommand}">
+                <MenuItem Header="删除" Command="{Binding VM.RemoveSelectedAlbumCommand}">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconRemove}" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="清空" Command="{Binding VM.ClearCommand}">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconClear}" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="重载失败" Command="{Binding VM.LoadUndwonloadWebImageModelsFromSaveCommand}">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconRefresh}" />
+                    </MenuItem.Icon>
                 </MenuItem>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="并行数量 " VerticalAlignment="Center"/>
                     <ComboBox VerticalAlignment="Center" ItemsSource="{Binding VM.TabAmountCollection}" SelectedItem="{Binding VM.TabAmount}"/>
                 </StackPanel>
+                <MenuItem Header="设置">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconSetting}" />
+                    </MenuItem.Icon>
+                    <Button Content="选择下载路径" VerticalAlignment="Center" Command="{Binding VM.SelectImagesSavePathCommand}"/>
+                    <TextBox Width="280" Text="{Binding VM.ImageSavePath,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                    <CheckBox Content="为每个相册创建独立文件夹" IsChecked="{Binding VM.IsNeedCreateAlbumFolder,Mode=TwoWay}"/>
+                    <CheckBox Content="下载期间阻止计算机睡眠" IsChecked="{Binding VM.IsPreventComputerSleep,Mode=TwoWay}"/>
+                    <Button Content="清除历史记录中未下载的图片" Command="{Binding VM.RemoveAllUndownloadRecordsCommand}"/>
+                    <Button Content="在资源管理器中打开下载路径"  Command="{Binding VM.OpenSaveFolderInFileExplorerCommand}"/>
+                </MenuItem>
                 <Separator/>
-                <MenuItem x:Name="StartMenuItem" Header="开始" Icon="{StaticResource IconDownload}" Click="StartMenuItem_Click"/>
+                <MenuItem x:Name="StartMenuItem" Header="开始" Click="StartMenuItem_Click">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconDownload}" />
+                    </MenuItem.Icon>
+                </MenuItem>
             </Menu>
         </Border>
         <Grid Grid.Row="2" Margin="0,8,0,8" Visibility="{Binding VM.HeaderVisibility}">

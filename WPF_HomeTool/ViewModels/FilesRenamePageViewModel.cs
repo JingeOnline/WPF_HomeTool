@@ -26,10 +26,30 @@ namespace WPF_HomeTool.ViewModels
         private bool _IsSaveButtonEnable = false;
         [ObservableProperty]
         private bool _IsPreviewButtonEnable = false;
+        [ObservableProperty]
+        private bool _IsAppendTextPanelVisiable = false;
+        [ObservableProperty]
+        private string _AppendText;
+        [ObservableProperty]
+        private int _AppendPositionIndex;
 
+        private string _appendPosition;
         public FilesRenamePageViewModel(ILogger<FilesRenamePageViewModel> logger)
         {
             _logger = logger;
+        }
+
+        [RelayCommand]
+        private void SelectedModeChanged()
+        {
+            if (SelectedMode == "指定位置插入文字")
+            {
+                IsAppendTextPanelVisiable = true;
+            }
+            else
+            {
+                IsAppendTextPanelVisiable = false;
+            }
         }
 
         [RelayCommand]
@@ -70,18 +90,34 @@ namespace WPF_HomeTool.ViewModels
         {
             try
             {
+                if (Files == null || Files.Count == 0)
+                {
+                    return;
+                }
                 foreach (var item in Files)
                 {
                     if (SelectedMode == "照片视频添加日期")
                     {
                         FileHelper.PreviewNameMediaFileWithDate(item);
                     }
+                    else if (SelectedMode == "指定位置插入文字")
+                    {
+                        appendNamePreview(item);
+                    }
                 }
                 IsSaveButtonEnable = true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.LogError(ex,"文件重命名预览出现异常");
+                _logger.LogError(ex, "文件重命名预览出现异常");
+            }
+        }
+        [RelayCommand]
+        private void ReversePreview()
+        {
+            foreach (var item in Files)
+            {
+                item.ReversePreview();
             }
         }
         [RelayCommand]
@@ -94,10 +130,18 @@ namespace WPF_HomeTool.ViewModels
             Hint = "保存成功";
             IsSaveButtonEnable = false;
         }
+        [RelayCommand]
+        private void AppendPositionSelected(string tag)
+        {
+            //Debug.WriteLine(tag);
+            _appendPosition = tag;
+        }
+
 
         //响应页面上拖拽过来的文件或者文件夹
         public void OnFileDrop(string[] paths)
         {
+            int indexInApp = 1;
             foreach (string filePath in paths)
             {
                 FileInfo fileInfo = new FileInfo(filePath);
@@ -105,12 +149,13 @@ namespace WPF_HomeTool.ViewModels
                 {
                     if (SelectedMode == "照片视频添加日期" && FileHelper.IsFilePhotoOrVideo(fileInfo))
                     {
-                        Files.Add(new FileInfoPreview(fileInfo));
+                        Files.Add(new FileInfoPreview(fileInfo, indexInApp: indexInApp));
                     }
                     else if (SelectedMode != "照片视频添加日期")
                     {
-                        Files.Add(new FileInfoPreview(fileInfo));
+                        Files.Add(new FileInfoPreview(fileInfo, indexInApp: indexInApp));
                     }
+                    indexInApp++;
                 }
                 else
                 {
@@ -118,16 +163,18 @@ namespace WPF_HomeTool.ViewModels
                     if (dirInfo.Exists)
                     {
                         var FileInfoList = FileHelper.GetAllFilesRecursively(dirInfo);
+                        int indexInFolder = 1;
                         foreach (var fileInFolder in FileInfoList)
                         {
                             if (SelectedMode == "照片视频添加日期" && FileHelper.IsFilePhotoOrVideo(fileInFolder))
                             {
-                                Files.Add(new FileInfoPreview(fileInFolder));
+                                Files.Add(new FileInfoPreview(fileInFolder, indexInFolder: indexInFolder));
                             }
                             else if (SelectedMode != "照片视频添加日期")
                             {
-                                Files.Add(new FileInfoPreview(fileInFolder));
+                                Files.Add(new FileInfoPreview(fileInFolder, indexInFolder: indexInFolder));
                             }
+                            indexInFolder++;
                         }
                     }
                 }
@@ -137,6 +184,56 @@ namespace WPF_HomeTool.ViewModels
             {
                 IsPreviewButtonEnable = true;
             }
+        }
+
+        private void appendNamePreview(FileInfoPreview fileInfoPreview)
+        {
+            if (!string.IsNullOrEmpty(fileInfoPreview.NamePreview))
+            {
+                fileInfoPreview.NamePreview = appendTextIntoName(fileInfoPreview.NamePreview, AppendText);
+            }
+            else
+            {
+                fileInfoPreview.NamePreview = appendTextIntoName(fileInfoPreview.FileInfo.Name, AppendText);
+            }
+        }
+
+        private string appendTextIntoName(string name, string text)
+        {
+            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(text))
+            {
+                if (_appendPosition == "Head")
+                {
+                    return text + name;
+                }
+                if (_appendPosition == "End")
+                {
+                    return Path.GetFileNameWithoutExtension(name) + text + Path.GetExtension(name);
+                }
+                else
+                {
+                    return name.Insert(AppendPositionIndex, text);
+                }
+            }
+            else
+            {
+                return name ?? text;
+            }
+        }
+
+        private string ReplaceSpecialString(FileInfoPreview fileInfoPreview, string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                string folderName = fileInfoPreview.FileInfo.Directory.Name;
+                text=text.Replace("$folder$", folderName);
+                int? index = fileInfoPreview.indexInFolder ?? fileInfoPreview.indexInApp;
+                if(index!=null)
+                {
+                    text=text.Replace("$index$",index.ToString());
+                }
+            }
+            return text;
         }
     }
 }

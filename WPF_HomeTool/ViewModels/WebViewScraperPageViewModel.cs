@@ -81,7 +81,23 @@ namespace WPF_HomeTool.ViewModels
                 ConfigHelper.WriteKeyValue("ImageSavePath", newValue);
             }
         }
-
+        [ObservableProperty]
+        private bool _IsPreventComputerSleep;
+        partial void OnIsPreventComputerSleepChanged(bool oldValue, bool newValue)
+        {
+            if (oldValue != newValue)
+            {
+                ConfigHelper.WriteKeyValue("IsPreventComputerSleep", newValue.ToString());
+            }
+            if(newValue)
+            {
+                WindowsKernelHelper.PreventSleep();
+            }
+            else
+            {
+                WindowsKernelHelper.AllowSleep();
+            }
+        }
         [ObservableProperty]
         private bool _isHumanValided;
         [ObservableProperty]
@@ -90,12 +106,15 @@ namespace WPF_HomeTool.ViewModels
         private int _DownloadedImageCount;
         [ObservableProperty]
         private int _FailedImageCount;
+
+
         public WebViewScraperPageViewModel(ILogger<WebViewScraperPageViewModel> logger)
         {
             _logger = logger;
             IsNeedCreateAlbumFolder = ConfigHelper.ReadKeyValue("IsNeedCreateAlbumFolder") == "True";
             ImageSavePath = ConfigHelper.ReadKeyValue("ImageSavePath")!;
             TabAmount = int.Parse(ConfigHelper.ReadKeyValue("ParallelTabAmount")!);
+            IsPreventComputerSleep = ConfigHelper.ReadKeyValue("IsPreventComputerSleep") == "True";
             TabAmountCollection = new ObservableCollection<int>() { 1, 2, 3, 4, 5, 6, 8, 10 };
         }
 
@@ -328,6 +347,7 @@ namespace WPF_HomeTool.ViewModels
             CheckWebImageModelsStatusAndDisplay();
             DebugAndOutputToStatusbar("All tasks completed.");
             WebPageTabModels.Clear();
+            WindowsKernelHelper.AllowSleep();
         }
         private async Task<string> getImageUrlFromImagePage_ImageFap(string html)
         {

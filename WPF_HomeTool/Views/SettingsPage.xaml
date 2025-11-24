@@ -110,8 +110,16 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Menu HorizontalAlignment="Right" >
-                                <MenuItem Header="Reload" Icon="{StaticResource IconRefresh}" Command="{Binding VM.ReloadConfigCommand}"/>
-                                <MenuItem Header="Save" Icon="{StaticResource IconSave}" Command="{Binding VM.SaveConfigCommand}"/>
+                                <MenuItem Header="Reload" Command="{Binding VM.ReloadConfigCommand}">
+                                    <MenuItem.Icon>
+                                        <ContentPresenter ContentTemplate="{StaticResource IconRefresh}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Save" Command="{Binding VM.SaveConfigCommand}">
+                                    <MenuItem.Icon>
+                                        <ContentPresenter ContentTemplate="{StaticResource IconSave}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </Menu>
                             <DataGrid Grid.Row="1" ColumnWidth="*"
                                       ItemsSource="{Binding VM.KeyValueCollection}"  AutoGenerateColumns="True">

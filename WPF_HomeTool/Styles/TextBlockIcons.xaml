@@ -1,13 +1,42 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <TextBlock x:Key="IconAdd" Text="&#xECC8;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
-    <TextBlock x:Key="IconRemove" Text="&#xECC9;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
-    <TextBlock x:Key="IconClear" Text="&#xE894;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
-    <TextBlock x:Key="IconPreview" Text="&#xF19D;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
-    <TextBlock x:Key="IconSave" Text="&#xE74E;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
-    <TextBlock x:Key="IconRefresh" Text="&#xE72C;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
-    <TextBlock x:Key="IconDownload" Text="&#xE896;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
-    <TextBlock x:Key="IconSetting" Text="&#xE713;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
-    <TextBlock x:Key="IconReturnKey" Text="&#xEB97;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
-    <TextBlock x:Key="IconSettingWizard" Text="&#xF53F;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    <!--UIElement 不能被多个地方重复使用。因为 TextBlock 是一个视觉元素，它只能有一个 parent。
+        如果被多次引用，当新的引用出现时，旧的引用会消失。也就是这些控件只能被渲染一次。
+        解决方法就是使用 DataTemplate 或者 DrawingImage-->
+    <DataTemplate x:Key="IconAdd">
+        <TextBlock  Text="&#xECC8;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate x:Key="IconRemove">
+        <TextBlock  Text="&#xECC9;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate x:Key="IconClear">
+        <TextBlock  Text="&#xE894;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate x:Key="IconPreview">
+        <TextBlock Text="&#xF19D;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate x:Key="IconSave">
+        <TextBlock Text="&#xE74E;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate x:Key="IconRefresh" >
+        <TextBlock Text="&#xE72C;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate x:Key="IconDownload" >
+        <TextBlock Text="&#xE896;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate  x:Key="IconSetting">
+        <TextBlock Text="&#xE713;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate x:Key="IconReturnKey" >
+        <TextBlock Text="&#xEB97;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate x:Key="IconSettingWizard">
+        <TextBlock Text="&#xF53F;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate  x:Key="IconFileExplorer">
+        <TextBlock Text="&#xEC50;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate  x:Key="IconReverse">
+        <TextBlock Text="&#xE845;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
 </ResourceDictionary>
