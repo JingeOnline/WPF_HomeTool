@@ -4,10 +4,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using WPF_HomeTool.Helpers;
 using WPF_HomeTool.Models;
+using System.Text.RegularExpressions;
 
 namespace WPF_HomeTool.ViewModels
 {
@@ -29,11 +31,23 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private bool _IsAppendTextPanelVisiable = false;
         [ObservableProperty]
+        private bool _IsModifyExtensionPanelVisiable = false;
+        [ObservableProperty]
+        private bool _IsReplaceNamePanelVisiable = false;
+        [ObservableProperty]
         private string _AppendText;
         [ObservableProperty]
         private int _AppendPositionIndex;
+        [ObservableProperty]
+        private string _NewExtensionText;
+        [ObservableProperty]
+        private string _SearchText;
+        [ObservableProperty]
+        private string _ReplaceText;
+
 
         private string _appendPosition;
+        private string _repalcePosition;
         public FilesRenamePageViewModel(ILogger<FilesRenamePageViewModel> logger)
         {
             _logger = logger;
@@ -45,20 +59,43 @@ namespace WPF_HomeTool.ViewModels
             if (SelectedMode == "指定位置插入文字")
             {
                 IsAppendTextPanelVisiable = true;
+                IsModifyExtensionPanelVisiable = false;
+                IsReplaceNamePanelVisiable = false;
+            }
+            else if (SelectedMode == "修改文件扩展名")
+            {
+                IsModifyExtensionPanelVisiable = true;
+                IsAppendTextPanelVisiable = false;
+                IsReplaceNamePanelVisiable = false;
+            }
+            else if (SelectedMode == "删除和替换文字")
+            {
+                IsReplaceNamePanelVisiable = true;
+                IsAppendTextPanelVisiable = false;
+                IsModifyExtensionPanelVisiable = false;
             }
             else
             {
                 IsAppendTextPanelVisiable = false;
+                IsModifyExtensionPanelVisiable = false;
+                IsReplaceNamePanelVisiable = false;
             }
         }
 
         [RelayCommand]
-        private void RemoveFiles(object selectedItems)
+        private void RemoveFiles(DataGrid grid)
         {
-            IList objectList = selectedItems as IList;
-            List<FileInfoPreview> selectedDirectoryInfos = objectList.Cast<FileInfoPreview>().ToList();
-
-            foreach (FileInfoPreview fileInfoPre in selectedDirectoryInfos)
+            //因为在DataGrid中设置了SelectionUnit="Cell"，所以无法直接获取SelectedItems（一直为空）。所以使用另一种方法，来获取选中的行。
+            if (grid == null) return;
+            var selectedRows = grid.SelectedCells
+                       .Select(c => c.Item)
+                       .OfType<FileInfoPreview>()
+                       .Distinct()
+                       .ToList();
+            //IList objectList = selectedItems as IList;
+            //List<FileInfoPreview> selectedDirectoryInfos = objectList.Cast<FileInfoPreview>().ToList();
+            //foreach (FileInfoPreview fileInfoPre in selectedDirectoryInfos)
+            foreach (FileInfoPreview fileInfoPre in selectedRows)
             {
                 Files.Remove(fileInfoPre);
             }
@@ -94,15 +131,23 @@ namespace WPF_HomeTool.ViewModels
                 {
                     return;
                 }
-                foreach (var item in Files)
+                foreach (FileInfoPreview fileInfoPreview in Files)
                 {
                     if (SelectedMode == "照片视频添加日期")
                     {
-                        FileHelper.PreviewNameMediaFileWithDate(item);
+                        FileHelper.PreviewNameMediaFileWithDate(fileInfoPreview);
                     }
                     else if (SelectedMode == "指定位置插入文字")
                     {
-                        appendNamePreview(item);
+                        appendNamePreview(fileInfoPreview);
+                    }
+                    else if (SelectedMode == "修改文件扩展名")
+                    {
+                        renameExtension(fileInfoPreview);
+                    }
+                    else if (SelectedMode == "删除和替换文字")
+                    {
+                        ReplaceFileNamePreview(fileInfoPreview);
                     }
                 }
                 IsSaveButtonEnable = true;
@@ -133,10 +178,13 @@ namespace WPF_HomeTool.ViewModels
         [RelayCommand]
         private void AppendPositionSelected(string tag)
         {
-            //Debug.WriteLine(tag);
             _appendPosition = tag;
         }
-
+        [RelayCommand]
+        private void ReplaceRadioButtonSelected(string tag)
+        {
+            _repalcePosition = tag;
+        }
 
         //响应页面上拖拽过来的文件或者文件夹
         public void OnFileDrop(string[] paths)
@@ -188,14 +236,9 @@ namespace WPF_HomeTool.ViewModels
 
         private void appendNamePreview(FileInfoPreview fileInfoPreview)
         {
-            if (!string.IsNullOrEmpty(fileInfoPreview.NamePreview))
-            {
-                fileInfoPreview.NamePreview = appendTextIntoName(fileInfoPreview.NamePreview, AppendText);
-            }
-            else
-            {
-                fileInfoPreview.NamePreview = appendTextIntoName(fileInfoPreview.FileInfo.Name, AppendText);
-            }
+            string name = string.IsNullOrEmpty(fileInfoPreview.NamePreview) ? fileInfoPreview.FileInfo.Name : fileInfoPreview.NamePreview;
+            string replacedText = ReplaceSpecialString(fileInfoPreview, AppendText);
+            fileInfoPreview.NamePreview = appendTextIntoName(name, replacedText);
         }
 
         private string appendTextIntoName(string name, string text)
@@ -206,7 +249,7 @@ namespace WPF_HomeTool.ViewModels
                 {
                     return text + name;
                 }
-                if (_appendPosition == "End")
+                else if (_appendPosition == "End")
                 {
                     return Path.GetFileNameWithoutExtension(name) + text + Path.GetExtension(name);
                 }
@@ -223,17 +266,49 @@ namespace WPF_HomeTool.ViewModels
 
         private string ReplaceSpecialString(FileInfoPreview fileInfoPreview, string text)
         {
-            if (string.IsNullOrEmpty(text))
+            if (!string.IsNullOrEmpty(text))
             {
                 string folderName = fileInfoPreview.FileInfo.Directory.Name;
-                text=text.Replace("$folder$", folderName);
+                text = text.Replace("$F$", folderName);
                 int? index = fileInfoPreview.indexInFolder ?? fileInfoPreview.indexInApp;
-                if(index!=null)
+                if (index != null)
                 {
-                    text=text.Replace("$index$",index.ToString());
+                    string pattern = @"\$0*I\$";
+                    var match = Regex.Match(text, pattern);
+                    if (match.Success)
+                    {
+                        int digital = match.Value.Count(c => c == '0')+1;
+                        string fomateParameter = "D" + digital;
+                        text = Regex.Replace(text, pattern, index?.ToString(fomateParameter));
+                    }
                 }
             }
             return text;
+        }
+
+        private void renameExtension(FileInfoPreview fileInfoPreview)
+        {
+            string name = string.IsNullOrEmpty(fileInfoPreview.NamePreview) ? fileInfoPreview.FileInfo.Name : fileInfoPreview.NamePreview;
+            //新扩展名是否包含“.”都不影响重命名
+            fileInfoPreview.NamePreview = Path.ChangeExtension(name, NewExtensionText);
+        }
+
+        private void ReplaceFileNamePreview(FileInfoPreview fileInfoPreview)
+        {
+            if (_repalcePosition == "All")
+            {
+                string replacedText = ReplaceSpecialString(fileInfoPreview, ReplaceText);
+                string replacedTextWithExt = replacedText + fileInfoPreview.FileInfo.Extension;
+                fileInfoPreview.NamePreview = replacedTextWithExt;
+            }
+            else if (_repalcePosition == "MatchText")
+            {
+                string name = string.IsNullOrEmpty(fileInfoPreview.NamePreview) ? fileInfoPreview.FileInfo.Name : fileInfoPreview.NamePreview;
+                string replacedText = ReplaceSpecialString(fileInfoPreview, ReplaceText);
+                string newName = name.Replace(SearchText, replacedText);
+                fileInfoPreview.NamePreview = newName;
+            }
+            //string name = string.IsNullOrEmpty(fileInfoPreview.NamePreview) ? fileInfoPreview.FileInfo.Name : fileInfoPreview.NamePreview;
         }
     }
 }
