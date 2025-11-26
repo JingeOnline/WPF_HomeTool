@@ -1,13 +1,14 @@
 ﻿
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Toolkit.Uwp.Notifications;
+using NLog.Extensions.Logging;
 using System.IO;
+using WPF_HomeTool.Controls;
+using WPF_HomeTool.Helpers;
 using WPF_HomeTool.Services;
 using WPF_HomeTool.ViewModels;
 using WPF_HomeTool.Views;
-using WPF_HomeTool.Controls;
-using WPF_HomeTool.Helpers;
-using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
 
 
 namespace WPF_HomeTool
@@ -70,7 +71,6 @@ namespace WPF_HomeTool
             //指定启动窗口
             this.MainWindow = _host.Services.GetRequiredService<MainWindow>();
             this.MainWindow.Show();
-            //_webHost.Start();
             try
             {
                 _webHost.Start();
@@ -79,10 +79,52 @@ namespace WPF_HomeTool
             {
                 ModernMessageBox.Show(ex.Message, "API端口已被占用", Controls.MessageBoxButton.OK, Controls.MessageBoxImage.Warning);
             }
+            // 注册 Toast 通知激活处理
+            ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
+        }
+
+        private void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat toastArgs)
+        {
+            ToastArguments args = ToastArguments.Parse(toastArgs.Argument);
+            Dispatcher.Invoke(() =>
+            {
+                // 获取用户的操作
+                if (args.Contains("action"))
+                {
+                    string action = args["action"];
+
+                    switch (action)
+                    {
+                        case "confirm":
+                            MessageBox.Show("用户点击了确认按钮");
+                            break;
+                        case "cancel":
+                            MessageBox.Show("用户点击了取消按钮");
+                            break;
+                        case "reply":
+                            var userInput = toastArgs.UserInput;
+                            if (userInput.ContainsKey("replyBox"))
+                            {
+                                MessageBox.Show($"用户输入: {userInput["replyBox"]}");
+                            }
+                            break;
+                    }
+                }
+
+                // 用户点击通知，激活主窗口
+                if (MainWindow.WindowState == WindowState.Minimized)
+                {
+                    MainWindow.WindowState = WindowState.Normal;
+                }
+                MainWindow.Activate();
+            });
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
+            // 清理所有通知
+            ToastNotificationManagerCompat.History.Clear();
+            ToastNotificationManagerCompat.Uninstall();
             base.OnExit(e);
             MyOnExitAsync().GetAwaiter().GetResult();
 

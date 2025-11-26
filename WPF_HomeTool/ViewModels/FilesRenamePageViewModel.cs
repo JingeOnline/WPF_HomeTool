@@ -121,6 +121,7 @@ namespace WPF_HomeTool.ViewModels
             FilesCount = FileHelper.GetDirectoryFileExtCountString(Files.Select(x => x.FileInfo));
             IsSaveButtonEnable = false;
             IsPreviewButtonEnable = false;
+            ToastNotificationHelper.ShowSimpleToast("title","message");
         }
         [RelayCommand]
         private void Preview()
