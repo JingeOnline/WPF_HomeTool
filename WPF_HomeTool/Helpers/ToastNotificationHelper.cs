@@ -115,7 +115,7 @@ namespace WPF_HomeTool.Helpers
         }
 
         /// <summary>
-        /// 显示自定义持续时间的 Toast
+        /// 显示25秒的 Toast
         /// </summary>
         public static void ShowLongToast(string title, string message)
         {
