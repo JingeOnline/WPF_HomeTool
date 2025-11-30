@@ -313,6 +313,8 @@ namespace WPF_HomeTool.ViewModels
                 {
                     DebugAndOutputToStatusbar(nse.Message);
                     _logger.LogError(nse.Message);
+                    ToastNotificationHelper.ShowSimpleToast("下载暂停","需要进行人机识别验证");
+
                     if (IsHumanValided)
                     {
                         IsHumanValided = false;
@@ -346,6 +348,7 @@ namespace WPF_HomeTool.ViewModels
             await Task.WhenAll(taskToWebPageTabModelDic.Keys);
             CheckWebImageModelsStatusAndDisplay();
             DebugAndOutputToStatusbar("All tasks completed.");
+            ToastNotificationHelper.ShowToastWithButtons("下载结束","");
             WebPageTabModels.Clear();
             WindowsKernelHelper.AllowSleep();
         }

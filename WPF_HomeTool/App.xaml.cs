@@ -96,10 +96,10 @@ namespace WPF_HomeTool
                     switch (action)
                     {
                         case "confirm":
-                            MessageBox.Show("用户点击了确认按钮");
+                            //MessageBox.Show("用户点击了确认按钮");
                             break;
                         case "cancel":
-                            MessageBox.Show("用户点击了取消按钮");
+                            //MessageBox.Show("用户点击了取消按钮");
                             break;
                         case "reply":
                             var userInput = toastArgs.UserInput;
