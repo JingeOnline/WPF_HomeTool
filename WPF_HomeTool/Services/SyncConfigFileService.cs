@@ -40,6 +40,7 @@ namespace WPF_HomeTool.Services
                                 string configFilePath = ConfigHelper.GetConigFilePath();
                                 string destFilePath = Path.Combine(targetFolderPath, "App.config");
                                 File.Copy(configFilePath, destFilePath, true);
+                                _logger.LogInformation("已将本地config文件同步到OneDrive。");
 
                                 //同步Saves文件夹
                                 string saveFolder = ConfigHelper.ReadKeyValue("SavesFolder");
@@ -80,6 +81,7 @@ namespace WPF_HomeTool.Services
                                     {
                                         File.Copy(localUndownloadFilesPath, oneDriveUndownloadFilesPath, true);
                                     }
+                                    _logger.LogInformation("已将本地Saves文件同步至OneDrive。");
                                 }
 
 
