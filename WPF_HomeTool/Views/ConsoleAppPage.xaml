@@ -118,9 +118,17 @@
         </Border>
         <Border Grid.Row="2" Style="{StaticResource MenuBorder}" Margin="0,8">
             <StackPanel Orientation="Vertical">
-                <TextBox HorizontalAlignment="Stretch" TextWrapping="Wrap" MaxHeight="80" FontFamily="Cascadia Code"
-                     VerticalScrollBarVisibility="Auto" AcceptsReturn="True" 
-                     Text="{Binding VM.UserCommandText,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}">
+                <TextBox HorizontalAlignment="Stretch"  MaxHeight="80" FontFamily="Cascadia Code" HorizontalScrollBarVisibility="Disabled"
+                     Text="{Binding VM.UserCommandText,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                     VerticalScrollBarVisibility="Auto"  
+                     TextOptions.TextFormattingMode="Display"
+                     TextOptions.TextRenderingMode="ClearType"
+                     TextOptions.TextHintingMode="Fixed"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Language="zh-CN"
+                     >
+                    <!--Style="{x:Null}"-->
                     <TextBox.InputBindings>
                         <KeyBinding Command="{Binding VM.RunUserInputCommand}" Gesture="Ctrl+Return" />
                     </TextBox.InputBindings>

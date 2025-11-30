@@ -42,9 +42,9 @@ namespace WPF_HomeTool.ViewModels
             new YtdlpRadioButtonModel("MP4视频", """$ExePath -P "$DownloadPath" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" $VideoUrl --cookies-from-browser chrome"""),
             new YtdlpRadioButtonModel("仅下载m4a音频", """$ExePath -P "$DownloadPath" -f "bestaudio[ext=m4a]" $VideoUrl --cookies-from-browser chrome"""),
             new YtdlpRadioButtonModel("下载视频后提取音轨并转换成MP3", """$ExePath -P "$DownloadPath" -x --audio-format mp3 $VideoUrl --cookies-from-browser chrome"""),
-            new YtdlpRadioButtonModel("webm视频+str字幕", """$ExePath -P "$DownloadPath" --write-sub --convert-subs srt $Language $VideoUrl --cookies-from-browser chrome"""),
-            new YtdlpRadioButtonModel("MP4视频+srt字幕","""$ExePath -P "$DownloadPath" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --write-sub --convert-subs srt $Language $VideoUrl --cookies-from-browser chrome"""),
-            new YtdlpRadioButtonModel("仅下载srt字幕" ,"""$ExePath -P "$DownloadPath" --no-check-certificates --skip-download --write-sub --convert-subs srt $Language $VideoUrl --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("webm视频+str字幕", """$ExePath -P "$DownloadPath" --convert-subs srt $Language $VideoUrl --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("MP4视频+srt字幕","""$ExePath -P "$DownloadPath" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --convert-subs srt $Language $VideoUrl --cookies-from-browser chrome"""),
+            new YtdlpRadioButtonModel("仅下载srt字幕" ,"""$ExePath -P "$DownloadPath" --no-check-certificates --skip-download --convert-subs srt $Language $VideoUrl --cookies-from-browser chrome"""),
             new YtdlpRadioButtonModel("模拟VR客户端下载8K视频","""$ExePath -P "$DownloadPath" $VideoUrl --extractor-arg "youtube:player_client=android_vr" -S res:4320 --cookies-from-browser chrome"""),
             new YtdlpRadioButtonModel("查看视频分辨率列表","""$ExePath -F $VideoUrl --list-formats --cookies-from-browser chrome"""),
             new YtdlpRadioButtonModel("yt-dlp在线升级","""$ExePath -U"""),
@@ -52,10 +52,11 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private ObservableCollection<YtdlpSubtitleLanguageRadioButtonModel> _languageRadioButtons= new ObservableCollection<YtdlpSubtitleLanguageRadioButtonModel>
         {
-            new YtdlpSubtitleLanguageRadioButtonModel("所有语言", "--all-subs",true),
-            new YtdlpSubtitleLanguageRadioButtonModel("英语", "--sub-lang en.*"),
-            new YtdlpSubtitleLanguageRadioButtonModel("中文（简体）", "--sub-lang zh-Hans"),
-            new YtdlpSubtitleLanguageRadioButtonModel("中文（繁体）", "--sub-lang zh-Hant"),
+            new YtdlpSubtitleLanguageRadioButtonModel("所有语言", "--write-sub --all-subs",true),
+            new YtdlpSubtitleLanguageRadioButtonModel("英语", "--write-sub --sub-lang en.*"),
+            new YtdlpSubtitleLanguageRadioButtonModel("中文（简体）", "--write-sub --sub-lang zh-Hans"),
+            new YtdlpSubtitleLanguageRadioButtonModel("中文（繁体）", "--write-sub --sub-lang zh-Hant"),
+            new YtdlpSubtitleLanguageRadioButtonModel("AUTO字幕", "--write-auto-sub --sub-lang en.*"),
         };
         [ObservableProperty]
         private bool _IsLanguagePanelVisiable;
