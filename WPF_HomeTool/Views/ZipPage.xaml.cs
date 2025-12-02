@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,13 +18,15 @@ using WPF_HomeTool.ViewModels;
 namespace WPF_HomeTool.Views
 {
     /// <summary>
-    /// Interaction logic for WebServerPage.xaml
+    /// Interaction logic for ZipPage.xaml
     /// </summary>
-    public partial class WebServerPage : Page
+    public partial class ZipPage : Page
     {
-        public WebServerPageViewModel VM { get; }
-        public WebServerPage(WebServerPageViewModel vm)
+        private readonly ILogger<ZipPage> _logger;
+        public ZipPageViewModel VM { get; }
+        public ZipPage(ZipPageViewModel vm, ILogger<ZipPage> logger)
         {
+            _logger = logger;
             VM = vm;
             DataContext = this;
             InitializeComponent();

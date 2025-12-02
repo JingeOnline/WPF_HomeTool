@@ -21,10 +21,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        <controls:PageHeader
-            Grid.Row="0"
-            Title="Files Rename"
-            Description="文件重命名工具集"/>
+        <controls:PageHeader  Grid.Row="0" Title="Files Rename"  Description="文件重命名工具集"/>
         <Border Grid.Row="1" Style="{StaticResource MenuBorder}">
             <StackPanel Orientation="Vertical">
                 <Menu >

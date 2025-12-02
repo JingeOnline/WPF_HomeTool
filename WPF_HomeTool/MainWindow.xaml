@@ -128,6 +128,13 @@
                                 <TextBlock Text="Files Rename"/>
                             </StackPanel>
                         </ListBoxItem>
+                        <!--ZipPage-->
+                        <ListBoxItem Tag="WPF_HomeTool.Views.ZipPage" >
+                            <StackPanel Orientation="Horizontal"  >
+                                <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xF012;" />
+                                <TextBlock Text="Files Zipper"/>
+                            </StackPanel>
+                        </ListBoxItem>
                         <!--WebViewScraperPage-->
                         <ListBoxItem Tag="WPF_HomeTool.Views.WebViewScraperPage" >
                             <StackPanel Orientation="Horizontal">

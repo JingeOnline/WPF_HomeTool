@@ -7,6 +7,7 @@ using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -96,6 +97,65 @@ namespace WPF_HomeTool.Helpers
                 _logger.LogError(ex, "递归获取文件夹下的所有文件发生异常");
                 return new List<FileInfo>();
             }
+        }
+
+        /// <summary>
+        /// 获取文件夹的大小并转换为带单位的文本（递归）
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns>可读带单位的文本</returns>
+        public static string GetDirectorySizeReadable(DirectoryInfo dir)
+        {
+            long size = GetDirectorySize(dir);
+            string readable = ConvertBytesToHumanReadable(size);
+            return readable;
+        }
+
+        /// <summary>
+        /// 获取文件夹的大小（递归）
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns>字节大小</returns>
+        public static long GetDirectorySize(DirectoryInfo dir)
+        {
+            long size = 0;
+
+            // 获取文件大小
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                size += file.Length;
+            }
+
+            // 获取子文件夹大小（递归）
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            foreach (DirectoryInfo subDir in dirs)
+            {
+                size += GetDirectorySize(subDir);
+            }
+
+            return size;
+        }
+
+        /// <summary>
+        /// 获取文件夹内的文件数量（递归）
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns></returns>
+        public static int GetDirectoryFilesCount(DirectoryInfo dir)
+        {
+            int count = 0;
+
+            // 当前目录中的文件数量
+            count += dir.GetFiles().Length;
+
+            // 递归统计子目录中的文件数量
+            foreach (var subDir in dir.GetDirectories())
+            {
+                count += GetDirectoryFilesCount(subDir);
+            }
+
+            return count;
         }
 
         /// <summary>
@@ -389,6 +449,10 @@ namespace WPF_HomeTool.Helpers
             }
         }
 
+        /// <summary>
+        /// 创建新文件，如果文件路径中的文件夹不存在，则自动创建
+        /// </summary>
+        /// <param name="path"></param>
         public static void CreateFileWithDirectoryIfNotExist(string path)
         {
             // 1. Get the directory part of the path
@@ -405,6 +469,57 @@ namespace WPF_HomeTool.Helpers
             {
                 using (File.Create(path)) { }
             }
+        }
+
+
+        /// <summary>
+        /// 压缩文件夹并报告进度
+        /// </summary>
+        /// <param name="folderZipModel"></param>
+        /// <param name="compressionLevel"></param>
+        /// <returns></returns>
+        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="Exception"></exception>
+        public static async Task ZipFolderWithProgressAsync(FolderZipModel folderZipModel, CompressionLevel compressionLevel)
+        {
+            if (!folderZipModel.FolderDirectoryInfo.Exists)
+                throw new DirectoryNotFoundException(folderZipModel.FolderDirectoryInfo.FullName);
+            if (File.Exists(folderZipModel.ZipFilePath))
+                throw new Exception($"{folderZipModel.ZipFilePath}目标路径中文件已经存在");
+
+            string sourceFolder = folderZipModel.FolderDirectoryInfo.FullName;
+
+            // 获取所有文件（包含子目录）
+            var allFiles = folderZipModel.FolderDirectoryInfo.GetFiles("*", SearchOption.AllDirectories);
+            int totalFiles = allFiles.Length;
+            int processedFiles = 0;
+
+
+            using (var zipStream = new FileStream(folderZipModel.ZipFilePath, FileMode.Create))
+            using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create))
+            {
+                foreach (var file in allFiles)
+                {
+                    string entryName = Path.GetRelativePath(sourceFolder, file.FullName);
+
+                    var entry = archive.CreateEntry(entryName, compressionLevel);
+
+                    using (var entryStream = entry.Open())
+                    using (var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
+                    {
+                        await fileStream.CopyToAsync(entryStream);
+                    }
+
+                    processedFiles++;
+
+                    double percent = (double)processedFiles / totalFiles * 100.0;
+                    folderZipModel.Progress = percent;
+                }
+            }
+
+            // 返回生成 zip 文件大小
+            FileInfo zipFileInfo = new FileInfo(folderZipModel.ZipFilePath);
+            folderZipModel.FolderZipSizeReadable = ConvertBytesToHumanReadable(zipFileInfo.Length);
         }
     }
 }

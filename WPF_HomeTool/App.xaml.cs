@@ -41,8 +41,6 @@ namespace WPF_HomeTool
                 services.AddSingleton<WPF_HomeTool.Navigation.INavigationService, WPF_HomeTool.Navigation.NavigationService>();
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
-                services.AddSingleton<WebServerPage>();
-                services.AddSingleton<WebServerPageViewModel>();
                 services.AddSingleton<HomePage>();
                 services.AddSingleton<HomePageViewModel>();
                 services.AddSingleton<SettingsPage>();
@@ -53,6 +51,8 @@ namespace WPF_HomeTool
                 services.AddSingleton<WebViewScraperPageViewModel>();
                 services.AddSingleton<ConsoleAppPage>();
                 services.AddSingleton<ConsoleAppPageViewModel>();
+                services.AddSingleton<ZipPage>();
+                services.AddSingleton<ZipPageViewModel>();
                 //services.AddSingleton<ImageFapService>();
 
                 services.AddHostedService<SyncConfigFileService>();

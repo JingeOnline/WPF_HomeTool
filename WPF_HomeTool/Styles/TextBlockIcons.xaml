@@ -39,4 +39,7 @@
     <DataTemplate  x:Key="IconReverse">
         <TextBlock Text="&#xE845;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
     </DataTemplate>
+    <DataTemplate  x:Key="IconZip">
+        <TextBlock Text="&#xF012;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
 </ResourceDictionary>
