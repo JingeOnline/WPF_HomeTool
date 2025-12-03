@@ -477,10 +477,11 @@ namespace WPF_HomeTool.Helpers
         /// </summary>
         /// <param name="folderZipModel"></param>
         /// <param name="compressionLevel"></param>
+        /// <param name="isFolderInclude">是否把文件夹自身也打包到压缩包中</param>
         /// <returns></returns>
         /// <exception cref="DirectoryNotFoundException"></exception>
         /// <exception cref="Exception"></exception>
-        public static async Task ZipFolderWithProgressAsync(FolderZipModel folderZipModel, CompressionLevel compressionLevel)
+        public static async Task ZipFolderWithProgressAsync(FolderZipModel folderZipModel, CompressionLevel compressionLevel, bool isFolderInclude = false)
         {
             if (!folderZipModel.FolderDirectoryInfo.Exists)
                 throw new DirectoryNotFoundException(folderZipModel.FolderDirectoryInfo.FullName);
@@ -488,6 +489,7 @@ namespace WPF_HomeTool.Helpers
                 throw new Exception($"{folderZipModel.ZipFilePath}目标路径中文件已经存在");
 
             string sourceFolder = folderZipModel.FolderDirectoryInfo.FullName;
+            string folderName = folderZipModel.FolderDirectoryInfo.Name; // ← 要加进压缩包的外层文件夹名
 
             // 获取所有文件（包含子目录）
             var allFiles = folderZipModel.FolderDirectoryInfo.GetFiles("*", SearchOption.AllDirectories);
@@ -501,6 +503,11 @@ namespace WPF_HomeTool.Helpers
                 foreach (var file in allFiles)
                 {
                     string entryName = Path.GetRelativePath(sourceFolder, file.FullName);
+                    //如果包含文件夹本身，则把文件夹的路径也添加进去
+                    if (isFolderInclude)
+                    {
+                        entryName = Path.Combine(folderName, entryName);
+                    }
 
                     var entry = archive.CreateEntry(entryName, compressionLevel);
 

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Xml;
 using WPF_HomeTool.Models;
 
 namespace WPF_HomeTool.Helpers
@@ -17,6 +19,7 @@ namespace WPF_HomeTool.Helpers
         {
             return cfa.FilePath;
         }
+
         public static void CreatKeyValue(string key, string value)
         {
             cfa.AppSettings.Settings.Add(key, value);
@@ -43,7 +46,7 @@ namespace WPF_HomeTool.Helpers
         public static List<KeyValueModel> GetAllKeyValuePairs()
         {
             List<KeyValueModel> keyValueList = new List<KeyValueModel>();
-            foreach(var key in cfa.AppSettings.Settings.AllKeys)
+            foreach (var key in cfa.AppSettings.Settings.AllKeys)
             {
                 keyValueList.Add(new KeyValueModel(key!, cfa.AppSettings.Settings[key]?.Value));
             }
@@ -54,12 +57,28 @@ namespace WPF_HomeTool.Helpers
         {
             foreach (KeyValueModel keyValueModel in keyValueModels)
             {
-                string valueInConfig=ReadKeyValue(keyValueModel.Key!)!;
-                if(valueInConfig!=keyValueModel.Value)
+                string valueInConfig = ReadKeyValue(keyValueModel.Key!)!;
+                if (valueInConfig != keyValueModel.Value)
                 {
-                    WriteKeyValue(keyValueModel.Key,keyValueModel.Value);
+                    WriteKeyValue(keyValueModel.Key, keyValueModel.Value);
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取App.config文件中的自定义节点，并以字典的形式返回
+        /// </summary>
+        /// <param name="sectionName"></param>
+        /// <returns></returns>
+        public static Dictionary<string, string> GetConfigSection(string sectionName)
+        {
+            IDictionary dict = (IDictionary)ConfigurationManager.GetSection(sectionName);
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            foreach (string key in dict.Keys)
+            {
+                result.Add(key, dict[key].ToString());
+            }
+            return result;
         }
     }
 }

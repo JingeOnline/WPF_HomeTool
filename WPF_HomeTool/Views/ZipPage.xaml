@@ -6,10 +6,13 @@
       xmlns:local="clr-namespace:WPF_HomeTool.Views"
       xmlns:helpers="clr-namespace:WPF_HomeTool.Helpers"
       xmlns:controls="clr-namespace:WPF_HomeTool.Controls"
+      xmlns:converters="clr-namespace:WPF_HomeTool.Converters"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="ZipPage">
-
+    <Page.Resources>
+        <converters:StringEqualsConverter x:Key="StringEqualsConverter"/>
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -31,10 +34,36 @@
                         <ContentPresenter ContentTemplate="{StaticResource IconRemove}" />
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="清空" Command="{Binding VM.ClearFilesCommand}">
+                <MenuItem Header="清空" Command="{Binding VM.ClearCollectionCommand}">
                     <MenuItem.Icon>
                         <ContentPresenter ContentTemplate="{StaticResource IconClear}" />
                     </MenuItem.Icon>
+                </MenuItem>
+
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="预设输出目录 " VerticalAlignment="Center"/>
+                    <ComboBox Width="280" ItemsSource="{Binding VM.OutputFolderCollection}"
+                              SelectedItem="{Binding VM.SelectedOutputFolder,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                              />
+                </StackPanel>
+
+                <MenuItem Header="设置">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconSetting}" />
+                    </MenuItem.Icon>
+                    <CheckBox Content="压缩完成后删除源文件" VerticalAlignment="Center" IsChecked="{Binding VM.IsDelteAfterZip, Mode=TwoWay}"/>
+                    <CheckBox Content="压缩包内含原始文件夹" VerticalAlignment="Center" IsChecked="{Binding VM.IsContainOrigionalFolderInZip, Mode=TwoWay}"/>
+                    <Button Content="自定义Zip文件输出目录" VerticalAlignment="Center" Command="{Binding VM.UserSelectOutputDirectoryCommand}"/>
+                    <!--<CheckBox Content="压缩文件输出到父级文件夹" VerticalAlignment="Center" IsChecked="{Binding VM.IsOutputToParentFolder, Mode=TwoWay}"/>
+
+                    <ItemsControl ItemsSource="{Binding VM.OutputFolderCollection}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <RadioButton Content="{Binding}" GroupName="StringRadioGroup" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>-->
                 </MenuItem>
                 <MenuItem Header="执行" Command="{Binding VM.StartZipCommand}">
                     <MenuItem.Icon>
@@ -59,7 +88,7 @@
                     <DataGridTextColumn Header="Size Readable" Binding="{Binding FolderRawSizeReadable}"/>
                     <DataGridTextColumn Header="Zip Readable" Binding="{Binding FolderZipSizeReadable}"/>
                     <DataGridTextColumn Header="Zip File" Binding="{Binding ZipFilePath}"/>
-                    
+
                     <DataGridTemplateColumn Header="Progress" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
