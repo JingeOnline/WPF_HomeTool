@@ -23,13 +23,12 @@
         <controls:PageHeader  Grid.Row="0" Title="Files Zipper"  Description="批量压缩工具"/>
         <Border Grid.Row="1" Style="{StaticResource MenuBorder}">
             <Menu>
-                <MenuItem Header="添加" Command="{Binding VM.AddFilesCommand}">
+                <MenuItem Header="添加" Command="{Binding VM.AddFoldersCommand}">
                     <MenuItem.Icon>
                         <ContentPresenter ContentTemplate="{StaticResource IconAdd}" />
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="删除" Command="{Binding VM.RemoveFilesCommand}" 
-                              CommandParameter="{Binding ElementName=DataGrid_FileInfo}">
+                <MenuItem Header="删除" Command="{Binding VM.RemoveFolderZipModelCommand}">
                     <MenuItem.Icon>
                         <ContentPresenter ContentTemplate="{StaticResource IconRemove}" />
                     </MenuItem.Icon>
@@ -39,7 +38,10 @@
                         <ContentPresenter ContentTemplate="{StaticResource IconClear}" />
                     </MenuItem.Icon>
                 </MenuItem>
-
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="压缩级别 " VerticalAlignment="Center"/>
+                    <ComboBox Width="160" ItemsSource="{Binding VM.CompressionLevels}" SelectedItem="{Binding VM.UserSelectedCompressionLevel}"/>
+                </StackPanel>
 
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="预设输出目录 " VerticalAlignment="Center"/>
@@ -76,20 +78,20 @@
               AllowDrop="True" 
               helpers:FileDragDropHelper.IsFileDragDropEnabled="True" 
               helpers:FileDragDropHelper.FileDragDropTarget="{Binding VM}">
-            <DataGrid ItemsSource="{Binding VM.FolderZipModelCollection}" AutoGenerateColumns="False" >
+            <DataGrid ItemsSource="{Binding VM.FolderZipModelCollection}" AutoGenerateColumns="False" 
+                      SelectedItem="{Binding VM.UserSelectedFolderZipModel,Mode=TwoWay}">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridCell">
                         <Setter Property="VerticalAlignment" Value="Center" />
                     </Style>
                 </DataGrid.Resources>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Folder Name" Binding="{Binding FolderName}" />
-                    <DataGridTextColumn Header="Files Count" Binding="{Binding FolderFilesCount}"/>
-                    <DataGridTextColumn Header="Size Readable" Binding="{Binding FolderRawSizeReadable}"/>
-                    <DataGridTextColumn Header="Zip Readable" Binding="{Binding FolderZipSizeReadable}"/>
-                    <DataGridTextColumn Header="Zip File" Binding="{Binding ZipFilePath}"/>
-
-                    <DataGridTemplateColumn Header="Progress" Width="*">
+                    <DataGridTextColumn Header="Folder Name" Binding="{Binding FolderName}" Width="*"/>
+                    <DataGridTextColumn Header="Files Count" Binding="{Binding FolderFilesCount}" Width="*"/>
+                    <DataGridTextColumn Header="Size Readable" Binding="{Binding FolderRawSizeReadable}" Width="*"/>
+                    <DataGridTextColumn Header="Zip Readable" Binding="{Binding FolderZipSizeReadable}" Width="*"/>
+                    <DataGridTextColumn Header="Zip File" Binding="{Binding ZipFilePath}" Width="*"/>
+                    <DataGridTemplateColumn Header="Progress" Width="3*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="18" Margin="4" >

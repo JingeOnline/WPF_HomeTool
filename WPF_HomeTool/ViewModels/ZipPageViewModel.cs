@@ -3,6 +3,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -21,14 +22,19 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private ObservableCollection<FolderZipModel> _FolderZipModelCollection = new ObservableCollection<FolderZipModel>();
         [ObservableProperty]
+        private FolderZipModel _UserSelectedFolderZipModel;
+        [ObservableProperty]
         private bool _IsDelteAfterZip = false;
         [ObservableProperty]
         private bool _IsContainOrigionalFolderInZip = false;
         [ObservableProperty]
         private string _SelectedOutputFolder = "父级文件夹";
-
         [ObservableProperty]
         private ObservableCollection<string> _OutputFolderCollection = new ObservableCollection<string>();
+        [ObservableProperty]
+        private ObservableCollection<CompressionLevel> _CompressionLevels;
+        [ObservableProperty]
+        private CompressionLevel _UserSelectedCompressionLevel = CompressionLevel.NoCompression;
 
         public ZipPageViewModel(ILogger<ZipPageViewModel> logger)
         {
@@ -39,6 +45,8 @@ namespace WPF_HomeTool.ViewModels
             {
                 OutputFolderCollection.Add(pair.Value);
             }
+            IEnumerable<CompressionLevel> levels = Enum.GetValues(typeof(CompressionLevel)).Cast<CompressionLevel>();
+            CompressionLevels = new ObservableCollection<CompressionLevel>(levels);
         }
 
         [RelayCommand]
@@ -55,7 +63,34 @@ namespace WPF_HomeTool.ViewModels
                 }
             }
         }
+        [RelayCommand]
+        private void AddFolders()
+        {
+            using (CommonOpenFileDialog dialog = new CommonOpenFileDialog())
+            {
+                dialog.IsFolderPicker = true; //Select Folder Only
+                dialog.Multiselect = true;
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    var folderPathes = dialog.FileNames;
+                    foreach (string folderPath in folderPathes)
+                    {
+                        DirectoryInfo dirInfo = new DirectoryInfo(folderPath);
+                        if (dirInfo.Exists)
+                        {
+                            FolderZipModel folderZipModel = new FolderZipModel(dirInfo);
+                            FolderZipModelCollection.Add(folderZipModel);
+                        }
+                    }
+                }
+            }
+        }
 
+        [RelayCommand]
+        private void RemoveFolderZipModel()
+        {
+            FolderZipModelCollection.Remove(UserSelectedFolderZipModel);
+        }
         [RelayCommand]
         private void ClearCollection()
         {
@@ -65,15 +100,24 @@ namespace WPF_HomeTool.ViewModels
         [RelayCommand]
         private async void StartZip()
         {
-            foreach (var folderZipModel in FolderZipModelCollection)
+            try
             {
-
-                SetZipFilePath(folderZipModel);
-                await FileHelper.ZipFolderWithProgressAsync(folderZipModel, System.IO.Compression.CompressionLevel.NoCompression, IsContainOrigionalFolderInZip);
-                if (IsDelteAfterZip)
+                foreach (var folderZipModel in FolderZipModelCollection)
                 {
-                    folderZipModel.FolderDirectoryInfo.Delete(recursive: true);
+
+                    SetZipFilePath(folderZipModel);
+                    await FileHelper.ZipFolderWithProgressAsync(folderZipModel, UserSelectedCompressionLevel, IsContainOrigionalFolderInZip);
+                    if (IsDelteAfterZip)
+                    {
+                        folderZipModel.FolderDirectoryInfo.Delete(recursive: true);
+                    }
                 }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex,"压缩文件夹时发生异常");
+                ModernMessageBox.Show(ex.Message+Environment.NewLine+Environment.NewLine+ex.InnerException?.Message,
+                    "压缩文件夹时发生异常",Controls.MessageBoxButton.OK,Controls.MessageBoxImage.Error);
             }
         }
 
