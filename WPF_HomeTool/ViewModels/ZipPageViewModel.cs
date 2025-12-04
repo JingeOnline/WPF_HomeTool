@@ -26,7 +26,7 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private bool _IsDelteAfterZip = false;
         [ObservableProperty]
-        private bool _IsContainOrigionalFolderInZip = false;
+        private bool _IsContainOrigionalFolderInZip = true;
         [ObservableProperty]
         private string _SelectedOutputFolder = "父级文件夹";
         [ObservableProperty]
