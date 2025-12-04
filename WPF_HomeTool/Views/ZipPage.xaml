@@ -90,8 +90,8 @@
                     <DataGridTextColumn Header="Files Count" Binding="{Binding FolderFilesCount}" Width="*"/>
                     <DataGridTextColumn Header="Size Readable" Binding="{Binding FolderRawSizeReadable}" Width="*"/>
                     <DataGridTextColumn Header="Zip Readable" Binding="{Binding FolderZipSizeReadable}" Width="*"/>
-                    <DataGridTextColumn Header="Zip File" Binding="{Binding ZipFilePath}" Width="*"/>
-                    <DataGridTemplateColumn Header="Progress" Width="3*">
+                    <DataGridTextColumn Header="Zip File" Binding="{Binding ZipFilePath}" Width="3*"/>
+                    <DataGridTemplateColumn Header="Progress" Width="5*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="18" Margin="4" >
