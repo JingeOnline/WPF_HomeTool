@@ -1,0 +1,47 @@
+﻿<Page x:Class="WPF_HomeTool.Views.Office365Page"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WPF_HomeTool.Views"
+      xmlns:controls="clr-namespace:WPF_HomeTool.Controls"
+      xmlns:behaviors="clr-namespace:WPF_HomeTool.Behaviors"
+      mc:Ignorable="d" 
+      d:DesignHeight="600" d:DesignWidth="800"
+      Title="Office365Page">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <!--<RowDefinition Height="auto"/>-->
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <controls:PageHeader  Grid.Row="0" Title="Office 365 SDK"  Description="Office 365 SDK"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Grid.Row="1">
+            <WrapPanel Orientation="Horizontal">
+                <Border Style="{StaticResource MenuBorder}" Margin="0,0,8,8" Padding="8" Width="480" Height="240">
+                    <GroupBox Header="获取文件" Padding="0,8">
+                    </GroupBox>
+                </Border>
+            </WrapPanel>
+        </ScrollViewer>
+        <Border Grid.Row="2" Style="{StaticResource MenuBorder}" Margin="0,8,0,8" Height="280">
+            <TextBox HorizontalAlignment="Stretch" TextWrapping="Wrap"  
+                     FontFamily="Cascadia Code" Background="Black" Foreground="White" CaretBrush="LightGreen" SelectionBrush="DodgerBlue"
+                     VerticalScrollBarVisibility="Visible" AcceptsReturn="True" IsReadOnly="True"
+                     Text="{Binding VM.ConsoleOutputText}" behaviors:TextBoxScrollBehavior.AutoScrollToEnd="True" Padding="8">
+                <TextBox.Style>
+                    <Style TargetType="TextBox">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="Black" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBox.Style>
+            </TextBox>
+        </Border>
+    </Grid>
+</Page>

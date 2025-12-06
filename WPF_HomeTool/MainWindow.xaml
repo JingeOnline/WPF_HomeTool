@@ -149,11 +149,11 @@
                                 <TextBlock Text="Console Apps"/>
                             </StackPanel>
                         </ListBoxItem>
-                        <!--WebServerPage-->
-                        <ListBoxItem Tag="WPF_HomeTool.Views.WebServerPage" >
+                        <!--Office365Page-->
+                        <ListBoxItem Tag="WPF_HomeTool.Views.Office365Page" >
                             <StackPanel Orientation="Horizontal"  >
-                                <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xEC27;" />
-                                <TextBlock Text="Web Server"/>
+                                <TextBlock Style="{StaticResource HamburgerMenuIconTextBlockStyle}" Text="&#xE753;" />
+                                <TextBlock Text="Office 365 SDK"/>
                             </StackPanel>
                         </ListBoxItem>
                     </ListBox>

@@ -53,7 +53,8 @@ namespace WPF_HomeTool
                 services.AddSingleton<ConsoleAppPageViewModel>();
                 services.AddSingleton<ZipPage>();
                 services.AddSingleton<ZipPageViewModel>();
-                //services.AddSingleton<ImageFapService>();
+                services.AddSingleton<Office365Page>();
+                services.AddSingleton<Office365PageViewModel>();
 
                 services.AddHostedService<SyncConfigFileService>();
                 //添加Nlog服务
