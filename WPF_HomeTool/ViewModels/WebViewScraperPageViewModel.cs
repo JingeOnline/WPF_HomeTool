@@ -3,12 +3,14 @@ using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Microsoft.Web.WebView2.Wpf;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,6 +29,7 @@ namespace WPF_HomeTool.ViewModels
 
         public event Action OnTabImageStarted;
         private readonly ILogger<WebViewScraperPageViewModel> _logger;
+        //private List<Cookie> ViewView2Cookies;
 
         [ObservableProperty]
         private string _webSite;
@@ -116,6 +119,44 @@ namespace WPF_HomeTool.ViewModels
             TabAmount = int.Parse(ConfigHelper.ReadKeyValue("ParallelTabAmount")!);
             IsPreventComputerSleep = ConfigHelper.ReadKeyValue("IsPreventComputerSleep") == "True";
             TabAmountCollection = new ObservableCollection<int>() { 1, 2, 3, 4, 5, 6, 8, 10 };
+            GetCookieFromWebView2Async();
+        }
+
+        public async Task GetCookieFromWebView2Async()
+        {
+            WebPageTabModel webPageTabModel = new WebPageTabModel($"Tab get cookie");
+            WebPageTabModels.Add(webPageTabModel);
+            await webPageTabModel.WebView.EnsureCoreWebView2Async(null);
+            var webView2Cookies = await webPageTabModel.WebView.CoreWebView2.CookieManager.GetCookiesAsync("https://www.imagefap.com");
+            if(webView2Cookies!=null && webView2Cookies.Count!=0)
+            {
+                CookieContainer cookieContainer= new CookieContainer();
+                foreach (var wv2Cookie in webView2Cookies)
+                {
+                    Cookie cookie = new Cookie()
+                    {
+                        Name = wv2Cookie.Name,
+                        Value = wv2Cookie.Value,
+                        Domain = wv2Cookie.Domain,
+                        Path = wv2Cookie.Path,
+                        HttpOnly = wv2Cookie.IsHttpOnly,
+                        Secure = wv2Cookie.IsSecure
+                    };
+                    cookieContainer.Add(cookie);
+                }
+                //设置HttpHelper的CookieContainer，以便后续的Http请求使用WebView2中的Cookie
+                HttpHelper.CookieContainer = cookieContainer;
+            }
+            WebPageTabModels.Clear();
+
+            //foreach (var cookie in cookies)
+            //{
+            //    Debug.WriteLine($"名称: {cookie.Name}");
+            //    Debug.WriteLine($"值: {cookie.Value}");
+            //    Debug.WriteLine($"域名: {cookie.Domain}");
+            //    Debug.WriteLine($"过期时间: {cookie.Expires}");
+            //    Debug.WriteLine("-------------------");
+            //}
         }
 
 

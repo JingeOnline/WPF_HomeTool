@@ -15,6 +15,7 @@ namespace WPF_HomeTool.Helpers
     public class HttpHelper
     {
         public static NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        public static CookieContainer CookieContainer;
 
         //为 HttpClient 加 “浏览器指纹” Header，imagefap 对非浏览器 TLS + UA 会直接丢包
         private static HttpClientHandler handler = new HttpClientHandler
@@ -23,16 +24,16 @@ namespace WPF_HomeTool.Helpers
         };
 
         private static HttpClient httpClient;
-        public HttpHelper()
-        {
-
-
-        }
 
         public static async Task<string> GetHtmlContent(string url)
         {
             if (httpClient == null)
             {
+                if (CookieContainer != null)
+                {
+                    handler.CookieContainer = CookieContainer;
+                    handler.UseCookies = true;
+                }
                 httpClient = new HttpClient(handler);
                 //为 HttpClient 加 “浏览器指纹” Header，imagefap 对非浏览器 TLS + UA 会直接丢包
                 httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
@@ -56,6 +57,7 @@ namespace WPF_HomeTool.Helpers
                 //return string.Empty;
             }
         }
+
         public static async Task DownloadWebImage(WebImageModel model, Action<WebImageModel> OnDownloadSucceed)
         {
             if (httpClient == null)
