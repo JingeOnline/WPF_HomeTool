@@ -408,7 +408,7 @@ namespace WPF_HomeTool.ViewModels
             {
                 DebugAndOutputToStatusbar($"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
                 _logger.LogError(ex, $"无法在ImageFap图片页面找到图片的URL: {ex.Message}");
-                _logger.LogInformation($"HTML内容:\r\n{html}");
+                //_logger.LogInformation($"HTML内容:\r\n{html}");
                 throw new Exception("无法在ImageFap图片页面找到图片的URL", ex);
             }
             //return string.Empty;
