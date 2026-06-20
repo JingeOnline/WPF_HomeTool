@@ -9,6 +9,8 @@ namespace WPF_HomeTool.Models
 {
     public partial class WebImageModel:ObservableObject
     {
+        [property: Ignore]
+        public Guid AlbumGuid { get; set; }
         [ObservableProperty]
         private string _pageUrl;
         [property: Ignore]

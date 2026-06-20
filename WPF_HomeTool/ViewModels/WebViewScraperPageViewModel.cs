@@ -94,7 +94,7 @@ namespace WPF_HomeTool.ViewModels
             {
                 ConfigHelper.WriteKeyValue("IsPreventComputerSleep", newValue.ToString());
             }
-            if(newValue)
+            if (newValue)
             {
                 WindowsKernelHelper.PreventSleep();
             }
@@ -107,6 +107,8 @@ namespace WPF_HomeTool.ViewModels
         private bool _isHumanValided;
         [ObservableProperty]
         private bool _isNeedHumandValidate;
+        [ObservableProperty]
+        private int _TotalImageCount;
         [ObservableProperty]
         private int _DownloadedImageCount;
         [ObservableProperty]
@@ -131,9 +133,9 @@ namespace WPF_HomeTool.ViewModels
             WebPageTabModels.Add(webPageTabModel);
             await webPageTabModel.WebView.EnsureCoreWebView2Async(null);
             var webView2Cookies = await webPageTabModel.WebView.CoreWebView2.CookieManager.GetCookiesAsync("https://www.imagefap.com");
-            if(webView2Cookies!=null && webView2Cookies.Count!=0)
+            if (webView2Cookies != null && webView2Cookies.Count != 0)
             {
-                CookieContainer cookieContainer= new CookieContainer();
+                CookieContainer cookieContainer = new CookieContainer();
                 foreach (var wv2Cookie in webView2Cookies)
                 {
                     Cookie cookie = new Cookie()
@@ -243,6 +245,7 @@ namespace WPF_HomeTool.ViewModels
                     {
                         WebImageModels.Add(imageModel);
                     }
+                    TotalImageCount = WebImageModels.Count;
                 }
             }
             else
@@ -260,6 +263,7 @@ namespace WPF_HomeTool.ViewModels
                 {
                     WebImageModels.Remove(imageModel);
                 }
+                TotalImageCount = WebImageModels.Count;
             }
             //删除选中的相册
             if (SelectedWebAlbumModel != null)
@@ -274,6 +278,7 @@ namespace WPF_HomeTool.ViewModels
             WebImageModels.Clear();
             DownloadedImageCount = 0;
             FailedImageCount = 0;
+            TotalImageCount = 0;
         }
         [RelayCommand]
         private void LoadUndwonloadWebImageModelsFromSave()
@@ -286,6 +291,7 @@ namespace WPF_HomeTool.ViewModels
                 {
                     WebImageModels.Add(model);
                 }
+                TotalImageCount = WebImageModels.Count;
             }
         }
         [RelayCommand]
@@ -327,6 +333,8 @@ namespace WPF_HomeTool.ViewModels
                 {
                     WebImageModel webImageModel = WebImageModels[index];
                     webImageModel.DownloadStatus = WebImageDownloadStatus.Downloading;
+                    //更新对应相册的下载状态为Downloading，以便界面上显示正在下载
+                    WebAlbumModels.First(x => x.AlbumGuid == webImageModel.AlbumGuid).DownloadStatus = WebImageDownloadStatus.Downloaded;
                     webPageTabModel.WebImageModel = webImageModel;
                     taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(webImageModel.PageUrl), webPageTabModel);
                     index++;
@@ -363,7 +371,7 @@ namespace WPF_HomeTool.ViewModels
                 {
                     DebugAndOutputToStatusbar(nse.Message);
                     _logger.LogError(nse.Message);
-                    ToastNotificationHelper.ShowSimpleToast("下载暂停","需要进行人机识别验证");
+                    ToastNotificationHelper.ShowSimpleToast("下载暂停", "需要进行人机识别验证");
 
                     if (IsHumanValided)
                     {
@@ -389,6 +397,8 @@ namespace WPF_HomeTool.ViewModels
                 {
                     WebImageModel webImageModel = WebImageModels[index];
                     webImageModel.DownloadStatus = WebImageDownloadStatus.Downloading;
+                    //更新对应相册的下载状态为Downloading，以便界面上显示正在下载
+                    WebAlbumModels.First(x => x.AlbumGuid == webImageModel.AlbumGuid).DownloadStatus = WebImageDownloadStatus.Downloaded;
                     webPageTabModel.WebImageModel = webImageModel;
                     taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(webImageModel.PageUrl), webPageTabModel);
                     index++;
@@ -398,7 +408,7 @@ namespace WPF_HomeTool.ViewModels
             await Task.WhenAll(taskToWebPageTabModelDic.Keys);
             CheckWebImageModelsStatusAndDisplay();
             DebugAndOutputToStatusbar("All tasks completed.");
-            ToastNotificationHelper.ShowToastWithButtons("下载结束","");
+            ToastNotificationHelper.ShowToastWithButtons("下载结束", "");
             WebPageTabModels.Clear();
             WindowsKernelHelper.AllowSleep();
         }

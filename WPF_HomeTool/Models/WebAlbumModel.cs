@@ -14,7 +14,11 @@ namespace WPF_HomeTool.Models
         private string _albumUrl;
         [ObservableProperty]
         private int _totalImageCount;
+        [ObservableProperty]
+        private WebImageDownloadStatus _downloadStatus = WebImageDownloadStatus.UnDownload;
         public List<WebImageModel> WebImageModelList { get; set; }= new List<WebImageModel>();
+        public readonly Guid AlbumGuid=Guid.NewGuid();
+
         public WebAlbumModel(string uri)
         {
             AlbumUrl = uri;

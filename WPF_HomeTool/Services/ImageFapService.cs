@@ -38,7 +38,7 @@ namespace WPF_HomeTool.Services
 
         public async Task<WebAlbumModel> GetImagePagesFromWebAlbumModel(WebAlbumModel webAlbumModel)
         {
-            webAlbumModel.WebImageModelList = await GetImagePageUrlFromAlbumPage(webAlbumModel.AlbumUrl);
+            webAlbumModel.WebImageModelList = await GetImagePageUrlFromAlbumPage(webAlbumModel.AlbumUrl,webAlbumModel.AlbumGuid);
             webAlbumModel.TotalImageCount = webAlbumModel.WebImageModelList.Count;
             if (webAlbumModel.TotalImageCount > 0)
             {
@@ -56,14 +56,14 @@ namespace WPF_HomeTool.Services
             }
             return webAlbumModel;
         }
-        public async Task<List<WebImageModel>> GetImagePageUrlFromAlbumPage(string albumPageUrl)
+        public async Task<List<WebImageModel>> GetImagePageUrlFromAlbumPage(string albumPageUrl,Guid albumGuid)
         {
             var config = Configuration.Default.WithDefaultLoader();
             IBrowsingContext context = BrowsingContext.New(config);
-            List<WebImageModel> models = await getImagePageUrlFromAlbumPage(context, albumPageUrl);
+            List<WebImageModel> models = await getImagePageUrlFromAlbumPage(context, albumPageUrl,albumGuid);
             return models;
         }
-        private async Task<List<WebImageModel>> getImagePageUrlFromAlbumPage(IBrowsingContext context, string albumPageUrl,
+        private async Task<List<WebImageModel>> getImagePageUrlFromAlbumPage(IBrowsingContext context, string albumPageUrl, Guid albumGuid,
             string pageIndexUrl = null, string albumName = null, int index = 1)
         {
             try
@@ -91,6 +91,7 @@ namespace WPF_HomeTool.Services
                     string fileDirPath = _isCreateSubFolder ? _downloadFolderPath + "\\" + albumName : _downloadFolderPath;
                     WebImageModel model = new WebImageModel()
                     {
+                        AlbumGuid = albumGuid,
                         AlbumUrl = albumPageUrl,
                         AlbumName = albumName,
                         IndexInAlbum = index,
@@ -111,7 +112,7 @@ namespace WPF_HomeTool.Services
                     {
                         pageIndexUrl = element.GetAttribute("href");
                         //Console.WriteLine(indexUrl);
-                        list.AddRange(await getImagePageUrlFromAlbumPage(context, albumPageUrl, pageIndexUrl, albumName, index));
+                        list.AddRange(await getImagePageUrlFromAlbumPage(context, albumPageUrl,albumGuid, pageIndexUrl, albumName, index));
                         break;
                     }
                 }
@@ -125,6 +126,11 @@ namespace WPF_HomeTool.Services
             }
         }
 
+        /// <summary>
+        /// 检查相册URL是否已下载过，避免重复下载
+        /// </summary>
+        /// <param name="albumUrl"></param>
+        /// <returns></returns>
         public bool IsAlbumUrlAlreadyDownloaded(string albumUrl)
         {
             try

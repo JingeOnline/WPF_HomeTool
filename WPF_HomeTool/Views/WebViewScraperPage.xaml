@@ -96,6 +96,12 @@
             </Grid.ColumnDefinitions>
             <DataGrid ItemsSource="{Binding VM.WebAlbumModels}" SelectedItem="{Binding VM.SelectedWebAlbumModel}"
                       AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" CanUserAddRows="False">
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" 
+                    Value="{Binding DownloadStatus, Converter={StaticResource StatusToColorConverter}}"/>
+                    </Style>
+                </DataGrid.RowStyle>
                 <DataGrid.Resources>
                     <Style TargetType="DataGridCell">
                         <Setter Property="VerticalAlignment" Value="Center" />
@@ -188,6 +194,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="auto"/>
                         <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding VM.StatusText,Mode=OneWay}" VerticalAlignment="Center">
                         <!--<TextBlock.Style>
@@ -201,8 +208,9 @@
                             </Style>
                         </TextBlock.Style>-->
                     </TextBlock>
-                    <TextBlock Grid.Column="1" Text="{Binding VM.FailedImageCount,StringFormat=失败数量:{0}}" VerticalAlignment="Center" Margin="4,0" HorizontalAlignment="Right"/>
-                    <TextBlock Grid.Column="2" Text="{Binding VM.DownloadedImageCount,StringFormat=下载数量:{0}}" VerticalAlignment="Center" Margin="4,0,48,0" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Column="1" Text="{Binding VM.TotalImageCount,StringFormat=总数:{0}}" VerticalAlignment="Center" Margin="4,0" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Column="2" Text="{Binding VM.FailedImageCount,StringFormat=失败:{0}}" VerticalAlignment="Center" Margin="4,0" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Column="3" Text="{Binding VM.DownloadedImageCount,StringFormat=下载:{0}}" VerticalAlignment="Center" Margin="4,0,48,0" HorizontalAlignment="Right"/>
                 </Grid>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="400">
