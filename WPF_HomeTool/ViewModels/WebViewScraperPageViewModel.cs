@@ -334,7 +334,12 @@ namespace WPF_HomeTool.ViewModels
                     WebImageModel webImageModel = WebImageModels[index];
                     webImageModel.DownloadStatus = WebImageDownloadStatus.Downloading;
                     //更新对应相册的下载状态为Downloading，以便界面上显示正在下载
-                    WebAlbumModels.First(x => x.AlbumGuid == webImageModel.AlbumGuid).DownloadStatus = WebImageDownloadStatus.Downloaded;
+                    var album = WebAlbumModels.FirstOrDefault(x => x.AlbumGuid == webImageModel.AlbumGuid);
+                    if (album != null)
+                    {
+                        album.DownloadStatus = WebImageDownloadStatus.Downloaded;
+                    }
+                    ////////////////////////////////////////////////////////
                     webPageTabModel.WebImageModel = webImageModel;
                     taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(webImageModel.PageUrl), webPageTabModel);
                     index++;
@@ -398,7 +403,12 @@ namespace WPF_HomeTool.ViewModels
                     WebImageModel webImageModel = WebImageModels[index];
                     webImageModel.DownloadStatus = WebImageDownloadStatus.Downloading;
                     //更新对应相册的下载状态为Downloading，以便界面上显示正在下载
-                    WebAlbumModels.First(x => x.AlbumGuid == webImageModel.AlbumGuid).DownloadStatus = WebImageDownloadStatus.Downloaded;
+                    var album = WebAlbumModels.FirstOrDefault(x => x.AlbumGuid == webImageModel.AlbumGuid);
+                    if (album != null)
+                    {
+                        album.DownloadStatus = WebImageDownloadStatus.Downloaded;
+                    }
+                    ////////////////////////////////////////////////////////
                     webPageTabModel.WebImageModel = webImageModel;
                     taskToWebPageTabModelDic.Add(webPageTabModel.NavigateToUriAsync(webImageModel.PageUrl), webPageTabModel);
                     index++;
