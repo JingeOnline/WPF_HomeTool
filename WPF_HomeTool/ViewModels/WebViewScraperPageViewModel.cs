@@ -44,7 +44,9 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private Visibility _HeaderVisibility = Visibility.Visible;
         [ObservableProperty]
-        private GridLength _DataGridLength = new GridLength(2, GridUnitType.Star);
+        private GridLength _DataGridLength = new GridLength(3, GridUnitType.Star);
+        [ObservableProperty]
+        private Visibility _GridSplitterVisibility = Visibility.Visible;
         [ObservableProperty]
         private string _userInputAlbumUri;
         partial void OnUserInputAlbumUriChanging(string value)
@@ -110,6 +112,7 @@ namespace WPF_HomeTool.ViewModels
         [ObservableProperty]
         private int _FailedImageCount;
 
+        private GridLength origionDataGridLengthForRecover;
 
         public WebViewScraperPageViewModel(ILogger<WebViewScraperPageViewModel> logger)
         {
@@ -178,13 +181,19 @@ namespace WPF_HomeTool.ViewModels
         {
             if (HeaderVisibility == Visibility.Visible)
             {
+                //记录原始DataGridLength，以便恢复
+                origionDataGridLengthForRecover = DataGridLength;
                 DataGridLength = new GridLength(0);
                 HeaderVisibility = Visibility.Collapsed;
+                GridSplitterVisibility = Visibility.Collapsed;
             }
             else
             {
-                DataGridLength = new GridLength(2, GridUnitType.Star);
+                //DataGridLength = new GridLength(3, GridUnitType.Star);
+                //恢复之前记录的DataGridLength高度
+                DataGridLength = origionDataGridLengthForRecover;
                 HeaderVisibility = Visibility.Visible;
+                GridSplitterVisibility = Visibility.Visible;
             }
         }
         [RelayCommand]

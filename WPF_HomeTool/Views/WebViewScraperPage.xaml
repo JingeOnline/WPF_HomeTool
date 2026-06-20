@@ -19,13 +19,16 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="{Binding VM.DataGridLength}"/>
+            <RowDefinition Height="{Binding VM.DataGridLength,Mode=TwoWay}"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
+        <!--PageHeader-->
         <Grid Visibility="{Binding VM.HeaderVisibility}">
             <controls:PageHeader Grid.Row="0" Title="WebView Scraper" Description="基于WebView2的网页爬虫工具" />
         </Grid>
+        <!--按钮设置栏-->
         <Border Grid.Row="1" Style="{StaticResource MenuBorder}" Visibility="{Binding VM.HeaderVisibility}">
             <Menu >
                 <ComboBox Width="140" Margin="0" Padding="0" SelectedValuePath="Content"
@@ -84,7 +87,8 @@
                 </MenuItem>
             </Menu>
         </Border>
-        <Grid Grid.Row="2" Margin="0,8,0,8" Visibility="{Binding VM.HeaderVisibility}">
+        <!--两个DataGrid-->
+        <Grid Grid.Row="2" Margin="0,8,0,4" Visibility="{Binding VM.HeaderVisibility}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="auto"/>
@@ -124,7 +128,11 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
-        <Border Grid.Row="3" Style="{StaticResource MenuBorder}" Padding="0,8,0,0">
+        <!--调整大小的GridSplitter-->
+        <GridSplitter Grid.Row="3" HorizontalAlignment="Stretch" Height="4" Background="Transparent"
+                      Visibility="{Binding VM.GridSplitterVisibility,Mode=OneWay}"/>
+        <!--WebView Tabs显示区域-->
+        <Border Grid.Row="4" Style="{StaticResource MenuBorder}" Padding="0,0,0,0">
             <Grid>
                 <TabControl x:Name="WebPageTabControl" ItemsSource="{Binding VM.WebPageTabModels}">
                     <TabControl.ContentTemplate>
@@ -158,7 +166,8 @@
 
 
         </Border>
-        <Border Grid.Row="4" Style="{StaticResource MenuBorder}" Margin="0,8,0,0">
+        <!--底部状态栏/Log-->
+        <Border Grid.Row="5" Style="{StaticResource MenuBorder}" Margin="0,8,0,0">
             <Grid Margin="8,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
