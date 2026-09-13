@@ -23,6 +23,9 @@ namespace WPF_HomeTool
     /// </summary>
     public partial class MainWindow : Window
     {
+        //程序是否第一次启动的标志位
+        private bool _isFirstStart = true;
+
         //这里定义ViewModel属性，在XAML中绑定时，绑定VM的所有属性，都要加上ViewModel.前缀
         public MainWindowViewModel VM { get; }
         private readonly INavigationService _navigationService;
@@ -58,7 +61,7 @@ namespace WPF_HomeTool
             );
         }
 
-        
+
 
         //导航完成后，更新BackButton的可用性，并更新导航列表的选择
         private void RootContentFrame_Navigated(object sender, NavigationEventArgs e)
@@ -125,6 +128,7 @@ namespace WPF_HomeTool
         private void TrayIconShowWindow_Click(object sender, RoutedEventArgs e)
         {
             this.Show();
+            //this.ShowInTaskbar = true;
             WindowState = WindowState.Normal;
         }
 
@@ -134,6 +138,24 @@ namespace WPF_HomeTool
             Application.Current.Shutdown();
         }
 
+        //当用户激活应用程序窗口时，在任务栏中显示应用程序图标（因为用户可能设置了开机启动后自动最小化到托盘）
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            if (!this.ShowInTaskbar)
+            {
+                //通过标志位判断是否是第一次启动，如果是第一次启动，则不显示在任务栏中，否则显示在任务栏中
+                if (_isFirstStart)
+                {
+                    _isFirstStart = false;
+                    return;
+                }
+                else
+                {
+                    this.ShowInTaskbar = true;
+                }
+            }
+        }
+        //在窗口加载时，判断是否用户设置为最小化到托盘
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (ConfigHelper.ReadKeyValue("IsStartGoToTrayIcon") == "True")

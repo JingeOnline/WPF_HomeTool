@@ -30,10 +30,8 @@ namespace WPF_HomeTool.Views
             VM = vm;
             DataContext = this;
             InitializeComponent();
-        }
 
-        private async void StartMenuItem_Click(object sender, RoutedEventArgs e)
-        {
+            //订阅事件，当下载开始后，自动切换Tab以确保WebView2加载
             VM.OnTabImageStarted += async () =>
             {
                 //切换Tab以确保WebView2加载,因为对于TabControl，如果TabItem没有被选中，则内部的frameworkelement不会被加载
@@ -45,6 +43,12 @@ namespace WPF_HomeTool.Views
                 }
                 WebPageTabControl.SelectedIndex = 0;
             };
+        }
+
+        //Todo: 这里的点击事件可以改为Command绑定，避免在View中写逻辑
+        private async void StartMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
             try
             {
                 await VM.StartTabControlScraper();
