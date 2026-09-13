@@ -32,7 +32,7 @@ namespace WPF_HomeTool.Services
     public class HomeController()
     {
         [HttpGet("/")]
-        public string Get() => "This is the root url of api.";
+        public string Get() => "This is the root url of WPF-Family-Helper api.";
     }
 
     [Route("pc-command")]
