@@ -364,7 +364,7 @@ namespace WPF_HomeTool.ViewModels
                     string html = await completedTask;//导航如果失败，会从这里抛出异常
                     string imageUrl = await getImageUrlFromImagePage_ImageFap(html);
                     webPageTabModel.WebImageModel.ImageUrl = imageUrl;
-                    DebugAndOutputToStatusbar(webPageTabModel.Name + " 成功获取到图片uri: " + imageUrl);
+                    DebugAndOutputToStatusbar(webPageTabModel.Name + " 成功获取到图片uri: " + imageUrl,false);
                     taskToWebPageTabModelDic.Remove(completedTask);
                     //异步下载图片，速度快，但是容易触发人机验证防护
                     //HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
@@ -446,14 +446,17 @@ namespace WPF_HomeTool.ViewModels
         }
 
         /// <summary>
-        /// 记录到Debug，并且输出到界面信息栏
+        /// 记录到Debug，并且输出到界面信息栏，可选参数决定是否输出到Detail页面
         /// </summary>
         /// <param name="s"></param>
-        private void DebugAndOutputToStatusbar(string s)
+        private void DebugAndOutputToStatusbar(string s, bool isOutputToStatusDetail = true)
         {
             Debug.WriteLine(s);
             StatusText = s;
-            StatusDetailText += s + Environment.NewLine;
+            if (isOutputToStatusDetail)
+            {
+                StatusDetailText += s + Environment.NewLine;
+            }
         }
 
         /// <summary>

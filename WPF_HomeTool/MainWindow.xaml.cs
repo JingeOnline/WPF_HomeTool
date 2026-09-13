@@ -58,6 +58,8 @@ namespace WPF_HomeTool
             );
         }
 
+        
+
         //导航完成后，更新BackButton的可用性，并更新导航列表的选择
         private void RootContentFrame_Navigated(object sender, NavigationEventArgs e)
         {
@@ -132,6 +134,17 @@ namespace WPF_HomeTool
             Application.Current.Shutdown();
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (ConfigHelper.ReadKeyValue("IsStartGoToTrayIcon") == "True")
+            {
+                this.WindowState = WindowState.Minimized;
+                this.ShowInTaskbar = false;
+                TrayIcon.Visibility = Visibility.Visible;
+                ToastNotificationHelper.ShowSimpleToast("程序已启动并最小化到托盘", "在托盘中双击图标打开程序界面");
+            }
+        }
+        //在窗口关闭时，判断是否需要最小化到托盘
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (ConfigHelper.ReadKeyValue("IsCloseGoToTrayIcon") == "True")
@@ -150,5 +163,7 @@ namespace WPF_HomeTool
             string? exeDirectory = Path.GetDirectoryName(exePath);
             Process.Start("explorer.exe", exeDirectory!);
         }
+
+
     }
 }

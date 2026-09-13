@@ -16,6 +16,7 @@
         MinWidth="480"
         MinHeight="250"
         Closing="Window_Closing"
+        Loaded="Window_Loaded"
     >
     <Window.Resources>
         <ResourceDictionary>
