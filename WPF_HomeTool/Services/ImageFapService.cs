@@ -10,7 +10,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using WPF_HomeTool.Controls;
 using WPF_HomeTool.Helpers;
 using WPF_HomeTool.Models;
 
@@ -24,6 +26,7 @@ namespace WPF_HomeTool.Services
         //private string _albumName;
         private static string _imageFapDownloadAlbumUrlPath;
         private static string _imageFapUnDownloadImageFilesPath;
+        private static string _imageFapDownloadAlbumIdPath;
         private readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
 
@@ -33,12 +36,13 @@ namespace WPF_HomeTool.Services
             _isCreateSubFolder = isCreateSubFolder;
             _imageFapDownloadAlbumUrlPath = ConfigHelper.ReadKeyValue("ImageFapDownloadAlbumUrlPath")!;
             _imageFapUnDownloadImageFilesPath = ConfigHelper.ReadKeyValue("ImageFapUndownloadFilePath")!;
+            _imageFapDownloadAlbumIdPath = ConfigHelper.ReadKeyValue("ImageFapDownloadAlbumIdPath")!;
             //DownloadFolderPath = "F:\\Image Download\\test";
         }
 
         public async Task<WebAlbumModel> GetImagePagesFromWebAlbumModel(WebAlbumModel webAlbumModel)
         {
-            webAlbumModel.WebImageModelList = await GetImagePageUrlFromAlbumPage(webAlbumModel.AlbumUrl,webAlbumModel.AlbumGuid);
+            webAlbumModel.WebImageModelList = await GetImagePageUrlFromAlbumPage(webAlbumModel.AlbumUrl, webAlbumModel.AlbumGuid);
             webAlbumModel.TotalImageCount = webAlbumModel.WebImageModelList.Count;
             if (webAlbumModel.TotalImageCount > 0)
             {
@@ -46,21 +50,23 @@ namespace WPF_HomeTool.Services
                 try
                 {
                     FileHelper.AppendLineToFile(_imageFapDownloadAlbumUrlPath, webAlbumModel.AlbumUrl);
+                    FileHelper.AppendLineToFile(_imageFapDownloadAlbumIdPath, webAlbumModel.AlbumId);
                     FileHelper.AppendModelsToCsv(webAlbumModel.WebImageModelList, _imageFapUnDownloadImageFilesPath);
                 }
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "写入历史记录时发生异常");
+                    ModernMessageBox.Show(ex.ToString(), "写入历史记录时发生异常");
                     Debug.WriteLine(ex);
                 }
             }
             return webAlbumModel;
         }
-        public async Task<List<WebImageModel>> GetImagePageUrlFromAlbumPage(string albumPageUrl,Guid albumGuid)
+        public async Task<List<WebImageModel>> GetImagePageUrlFromAlbumPage(string albumPageUrl, Guid albumGuid)
         {
             var config = Configuration.Default.WithDefaultLoader();
             IBrowsingContext context = BrowsingContext.New(config);
-            List<WebImageModel> models = await getImagePageUrlFromAlbumPage(context, albumPageUrl,albumGuid);
+            List<WebImageModel> models = await getImagePageUrlFromAlbumPage(context, albumPageUrl, albumGuid);
             return models;
         }
         private async Task<List<WebImageModel>> getImagePageUrlFromAlbumPage(IBrowsingContext context, string albumPageUrl, Guid albumGuid,
@@ -112,7 +118,7 @@ namespace WPF_HomeTool.Services
                     {
                         pageIndexUrl = element.GetAttribute("href");
                         //Console.WriteLine(indexUrl);
-                        list.AddRange(await getImagePageUrlFromAlbumPage(context, albumPageUrl,albumGuid, pageIndexUrl, albumName, index));
+                        list.AddRange(await getImagePageUrlFromAlbumPage(context, albumPageUrl, albumGuid, pageIndexUrl, albumName, index));
                         break;
                     }
                 }
@@ -131,12 +137,12 @@ namespace WPF_HomeTool.Services
         /// </summary>
         /// <param name="albumUrl"></param>
         /// <returns></returns>
-        public bool IsAlbumUrlAlreadyDownloaded(string albumUrl)
+        public bool IsAlbumUrlAlreadyDownloaded(string albumId)
         {
             try
             {
-                var downloadedAlbumUrls = FileHelper.ReadFileInLines(_imageFapDownloadAlbumUrlPath);
-                if (downloadedAlbumUrls.Contains(albumUrl))
+                var downloadedAlbumIds = FileHelper.ReadFileInLines(_imageFapDownloadAlbumIdPath);
+                if (downloadedAlbumIds.Contains(albumId))
                 {
                     return true;
                 }
@@ -145,7 +151,8 @@ namespace WPF_HomeTool.Services
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                _logger.Error(ex, "检查ImageFap相册URL是否已下载时发生异常");
+                _logger.Error(ex, "检查ImageFap相册ID是否已下载时发生异常");
+                ModernMessageBox.Show(ex.ToString(), "检查ImageFap相册ID是否已下载时发生异常");
                 throw;
             }
         }
@@ -164,6 +171,40 @@ namespace WPF_HomeTool.Services
         {
             FileHelper.CreateFileWithDirectoryIfNotExist(_imageFapDownloadAlbumUrlPath);
             FileHelper.CreateFileWithDirectoryIfNotExist(_imageFapUnDownloadImageFilesPath);
+        }
+        public static string ExtractIdFromUrl(string url)
+        {
+            string pattern1 = @"(?<=/)(\d+)(?=/)";
+            var match1 = Regex.Match(url, pattern1);
+            if (match1.Success)
+            {
+                Console.WriteLine(match1.Value);
+                return match1.Value;
+            }
+            else
+            {
+                string pattern2 = @"(?<=gid=)(\d+)";
+                var match2 = Regex.Match(url, pattern2);
+                if (match2.Success)
+                {
+                    Console.WriteLine(match2.Value);
+                    return match2.Value;
+                }
+                else
+                {
+                    string pattern3 = @"(?<=/)\d+$";
+                    var match3 = Regex.Match(url, pattern3);
+                    if (match3.Success)
+                    {
+                        Console.WriteLine(match3.Value);
+                        return match3.Value;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("无法从URL中提取ID", url);
+                    }
+                }
+            }
         }
     }
 }

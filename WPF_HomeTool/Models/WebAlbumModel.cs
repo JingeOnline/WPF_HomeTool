@@ -18,10 +18,12 @@ namespace WPF_HomeTool.Models
         private WebImageDownloadStatus _downloadStatus = WebImageDownloadStatus.UnDownload;
         public List<WebImageModel> WebImageModelList { get; set; }= new List<WebImageModel>();
         public readonly Guid AlbumGuid=Guid.NewGuid();
+        public readonly string AlbumId;
 
-        public WebAlbumModel(string uri)
+        public WebAlbumModel(string uri, string albumId)
         {
             AlbumUrl = uri;
+            AlbumId = albumId;
         }
     }
 }

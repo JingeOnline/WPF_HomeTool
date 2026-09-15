@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
+using WPF_HomeTool.Controls;
 using WPF_HomeTool.Helpers;
 using WPF_HomeTool.Models;
 using WPF_HomeTool.Services;
@@ -205,24 +206,27 @@ namespace WPF_HomeTool.ViewModels
             {
                 ImageFapService imageFapService = new ImageFapService(ImageSavePath, IsNeedCreateAlbumFolder);
                 UserInputAlbumUri = UserInputAlbumUri.Trim();
+                string albumId;
                 try
                 {
+                    albumId = ImageFapService.ExtractIdFromUrl(UserInputAlbumUri);
                     imageFapService.CheckSaveFileExist();
-                    if (imageFapService.IsAlbumUrlAlreadyDownloaded(UserInputAlbumUri))
+                    if (imageFapService.IsAlbumUrlAlreadyDownloaded(albumId))
                     {
-                        DebugAndOutputToStatusbar($"相册地址已存在于历史记录中，跳过: {UserInputAlbumUri}");
+                        DebugAndOutputToStatusbar($"相册ID={albumId}已存在于历史记录中，跳过。");
                         UserInputAlbumUri = string.Empty;
                         return;
                     }
                 }
                 catch (Exception ex)
                 {
-                    DebugAndOutputToStatusbar($"检查相册地址是否存在于历史记录时发生错误: {ex.Message}");
-                    _logger.LogError(ex, "检查相册地址是否存在于历史记录时发生错误");
+                    DebugAndOutputToStatusbar($"检查相册ID是否存在于历史记录时发生错误: {ex.Message}");
+                    _logger.LogError(ex, "检查相册ID是否存在于历史记录时发生错误");
+                    ModernMessageBox.Show(ex.Message.ToString(), "检查相册ID是否存在于历史记录时发生错误");
                     return;
                 }
 
-                WebAlbumModel model = new WebAlbumModel(UserInputAlbumUri);
+                WebAlbumModel model = new WebAlbumModel(UserInputAlbumUri, albumId);
                 WebAlbumModels.Add(model);
                 UserInputAlbumUri = string.Empty;
 
@@ -279,6 +283,7 @@ namespace WPF_HomeTool.ViewModels
             DownloadedImageCount = 0;
             FailedImageCount = 0;
             TotalImageCount = 0;
+            StatusDetailText = string.Empty;
         }
         [RelayCommand]
         private void LoadUndwonloadWebImageModelsFromSave()
@@ -364,7 +369,7 @@ namespace WPF_HomeTool.ViewModels
                     string html = await completedTask;//导航如果失败，会从这里抛出异常
                     string imageUrl = await getImageUrlFromImagePage_ImageFap(html);
                     webPageTabModel.WebImageModel.ImageUrl = imageUrl;
-                    DebugAndOutputToStatusbar(webPageTabModel.Name + " 成功获取到图片uri: " + imageUrl,false);
+                    DebugAndOutputToStatusbar(webPageTabModel.Name + " 成功获取到图片uri: " + imageUrl, false);
                     taskToWebPageTabModelDic.Remove(completedTask);
                     //异步下载图片，速度快，但是容易触发人机验证防护
                     //HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
