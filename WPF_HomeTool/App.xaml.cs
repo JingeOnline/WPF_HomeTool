@@ -71,7 +71,11 @@ namespace WPF_HomeTool
             _host.Start();
             //指定启动窗口
             this.MainWindow = _host.Services.GetRequiredService<MainWindow>();
-            this.MainWindow.Show();
+            //如果配置文件中设置了启动时最小化到托盘，则不显示主窗口
+            if (ConfigHelper.ReadKeyValue("IsStartGoToTrayIcon") != "True")
+            {
+                this.MainWindow.Show();
+            }
             try
             {
                 _webHost.Start();
@@ -111,7 +115,7 @@ namespace WPF_HomeTool
                             break;
                     }
                 }
-
+                MainWindow.Show();
                 // 用户点击通知，激活主窗口
                 if (MainWindow.WindowState == WindowState.Minimized)
                 {

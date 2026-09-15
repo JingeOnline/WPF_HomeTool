@@ -58,7 +58,7 @@ namespace WPF_HomeTool.Helpers
             }
         }
 
-        public static async Task DownloadWebImage(WebImageModel model, Action<WebImageModel> OnDownloadSucceed)
+        public static async Task DownloadWebImageAsync(WebImageModel model, Action<WebImageModel> OnDownloadSucceed)
         {
             if (httpClient == null)
             {

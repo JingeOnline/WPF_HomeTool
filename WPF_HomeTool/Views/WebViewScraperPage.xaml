@@ -8,6 +8,7 @@
       xmlns:models="clr-namespace:WPF_HomeTool.Models"
       xmlns:converters="clr-namespace:WPF_HomeTool.Converters"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:Helpers="clr-namespace:WPF_HomeTool.Helpers"
       mc:Ignorable="d" 
       d:DesignHeight="650" d:DesignWidth="1200"
       Title="WebViewScraperPage">
@@ -80,10 +81,34 @@
                     <Button Content="在资源管理器中打开下载路径"  Command="{Binding VM.OpenSaveFolderInFileExplorerCommand}"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem x:Name="StartMenuItem" Header="开始" Click="StartMenuItem_Click">
+                <MenuItem x:Name="StartMenuItem" Header="开始" Command="{Binding VM.StartTabControlScraperCommand}">
                     <MenuItem.Icon>
                         <ContentPresenter ContentTemplate="{StaticResource IconDownload}" />
                     </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Command="{Binding VM.PauseCommand}">
+                    <MenuItem.Style>
+                        <Style TargetType="MenuItem">
+                            <!-- 默认状态：暂停 -->
+                            <Setter Property="Header" Value="暂停"/>
+                            <Setter Property="Icon">
+                                <Setter.Value>
+                                    <ContentPresenter ContentTemplate="{StaticResource IconPause}"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <!-- 暂停后：显示继续 -->
+                                <DataTrigger Binding="{Binding VM.IsPausing}" Value="True">
+                                    <Setter Property="Header" Value="继续"/>
+                                    <Setter Property="Icon">
+                                        <Setter.Value>
+                                            <ContentPresenter ContentTemplate="{StaticResource IconPlay}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </MenuItem.Style>
                 </MenuItem>
             </Menu>
         </Border>
@@ -114,8 +139,9 @@
                 </DataGrid.Columns>
             </DataGrid>
             <GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" HorizontalAlignment="Stretch" Width="8" Background="Transparent"/>
-            <DataGrid Grid.Column="2" ItemsSource="{Binding VM.WebImageModels}" 
-                      AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" CanUserAddRows="False">
+            <DataGrid Grid.Column="2" ItemsSource="{Binding VM.WebImageModels}" SelectedItem="{Binding VM.SelectedWebImageModel}"
+                      AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" CanUserAddRows="False"
+                      Helpers:DataGridHelper.AutoScrollToSelectedItem="True">
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" 

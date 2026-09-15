@@ -8,6 +8,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -42,6 +43,13 @@ namespace WPF_HomeTool.ViewModels
         private ObservableCollection<WebImageModel> _WebImageModels = new ObservableCollection<WebImageModel>();
         [ObservableProperty]
         private WebAlbumModel _selectedWebAlbumModel;
+        partial void OnSelectedWebAlbumModelChanged(WebAlbumModel value)
+        {
+            //当选中左侧DataGrid中的相册时，右侧表格自动选中该相册中的第一张图片，并滚动到该位置
+            SelectedWebImageModel = value.WebImageModelList.FirstOrDefault();
+        }
+        [ObservableProperty]
+        private WebImageModel _selectedWebImageModel;
         [ObservableProperty]
         private Visibility _HeaderVisibility = Visibility.Visible;
         [ObservableProperty]
@@ -114,6 +122,11 @@ namespace WPF_HomeTool.ViewModels
         private int _DownloadedImageCount;
         [ObservableProperty]
         private int _FailedImageCount;
+        [ObservableProperty]
+        private bool _isPausing = false;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(PauseCommand),nameof(StartTabControlScraperCommand))]
+        private bool _isStarted = false;
 
         private GridLength origionDataGridLengthForRecover;
 
@@ -199,6 +212,7 @@ namespace WPF_HomeTool.ViewModels
                 GridSplitterVisibility = Visibility.Visible;
             }
         }
+
         [RelayCommand]
         private async Task AddAlbumUri()
         {
@@ -320,8 +334,32 @@ namespace WPF_HomeTool.ViewModels
             IsHumanValided = true;
             IsNeedHumandValidate = false;
         }
-        public async Task StartTabControlScraper()
+        private bool CanPause()
         {
+            return IsStarted;
+        }
+        [RelayCommand(CanExecute = nameof(CanPause))]
+        private void Pause()
+        {
+            IsPausing = !IsPausing;
+            if(IsPausing)
+            {
+                DebugAndOutputToStatusbar($"用户手动点击暂停了下载任务。");
+            }
+            else
+            {
+                DebugAndOutputToStatusbar($"用户手动点击继续了下载任务。");
+            }
+        }
+        private bool CanStart()
+        {
+            return !IsStarted;
+        }
+        
+        [RelayCommand(CanExecute =nameof(CanStart))]
+        private async Task StartTabControlScraper()
+        {
+            IsStarted = true;
             DebugAndOutputToStatusbar("开始使用TabControl下载页面中的图片...");
             IEnumerable<int> tabsIndex = Enumerable.Range(1, TabAmount);
             foreach (var i in tabsIndex)
@@ -374,7 +412,7 @@ namespace WPF_HomeTool.ViewModels
                     //异步下载图片，速度快，但是容易触发人机验证防护
                     //HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
                     //同步下载图片，速度慢，但是不容易触发人机验证防护
-                    await HttpHelper.DownloadWebImage(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
+                    await HttpHelper.DownloadWebImageAsync(webPageTabModel.WebImageModel, ImageFapService.RemoveDownloadedFromSave);
                 }
                 //检测到需要人工验证时，抛出该异常
                 catch (NotSupportedException nse)
@@ -402,9 +440,15 @@ namespace WPF_HomeTool.ViewModels
                     webPageTabModel.WebImageModel.DownloadStatus = WebImageDownloadStatus.Failed;
                     taskToWebPageTabModelDic.Remove(completedTask);
                 }
+                //如果用户点击了暂停按钮，IsRunning会变为false，下面的循环会一直等待，直到用户点击开始按钮
+                while (IsPausing)
+                {
+                    await Task.Delay(100);
+                }
                 //即使上面发生异常，通过try catch把旧的任务移除，继续添加新的任务
                 if (WebImageModels.Count(x => x.DownloadStatus == WebImageDownloadStatus.UnDownload) > 0)
                 {
+
                     WebImageModel webImageModel = WebImageModels[index];
                     webImageModel.DownloadStatus = WebImageDownloadStatus.Downloading;
                     //更新对应相册的下载状态为Downloading，以便界面上显示正在下载
@@ -426,6 +470,7 @@ namespace WPF_HomeTool.ViewModels
             ToastNotificationHelper.ShowToastWithButtons("下载结束", "");
             WebPageTabModels.Clear();
             WindowsKernelHelper.AllowSleep();
+            IsStarted = false;
         }
         private async Task<string> getImageUrlFromImagePage_ImageFap(string html)
         {

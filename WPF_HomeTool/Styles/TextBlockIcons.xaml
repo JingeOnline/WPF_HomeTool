@@ -24,6 +24,12 @@
     <DataTemplate x:Key="IconDownload" >
         <TextBlock Text="&#xE896;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
     </DataTemplate>
+    <DataTemplate x:Key="IconPause" >
+        <TextBlock Text="&#xE769;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate x:Key="IconPlay" >
+        <TextBlock Text="&#xE768;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
     <DataTemplate  x:Key="IconSetting">
         <TextBlock Text="&#xE713;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
     </DataTemplate>

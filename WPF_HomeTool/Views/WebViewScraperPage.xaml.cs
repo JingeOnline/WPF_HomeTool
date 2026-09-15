@@ -46,18 +46,17 @@ namespace WPF_HomeTool.Views
         }
 
         //Todo: 这里的点击事件可以改为Command绑定，避免在View中写逻辑
-        private async void StartMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-
-            try
-            {
-                await VM.StartTabControlScraper();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("开始爬取页面后出现异常，已结束继续爬取\r\n" + ex);
-                _logger.LogError(ex, "开始爬取页面后出现异常，已结束继续爬取");
-            }
-        }
+        //private async void StartMenuItem_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        await VM.StartTabControlScraper();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine("开始爬取页面后出现异常，已结束继续爬取\r\n" + ex);
+        //        _logger.LogError(ex, "开始爬取页面后出现异常，已结束继续爬取");
+        //    }
+        //}
     }
 }

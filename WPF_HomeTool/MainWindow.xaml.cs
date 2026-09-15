@@ -59,6 +59,14 @@ namespace WPF_HomeTool
                         NonClientFrameEdges.Right | NonClientFrameEdges.Bottom | NonClientFrameEdges.Left
                 }
             );
+            //从配置文件中读取是否启动时最小化到托盘的设置，如果是，则App.xaml.cs中不会调用show()方法，需要强制创建系统托盘图标
+            if (ConfigHelper.ReadKeyValue("IsStartGoToTrayIcon") == "True")
+            {
+                TrayIcon.Visibility = Visibility.Visible;
+                //即使主窗口从未调用过 Show() 时，强制创建系统托盘图标
+                TrayIcon.ForceCreate();
+                ToastNotificationHelper.ShowSimpleToast("程序已启动并最小化到托盘", "在托盘中双击图标打开程序界面");
+            }
         }
 
 
@@ -109,7 +117,14 @@ namespace WPF_HomeTool
                 }
             }
         }
-
+        private void OpenAppLocationButton_Click(object sender, RoutedEventArgs e)
+        {
+            //获取当前应用程序exe文件所在的目录
+            string exePath = System.Environment.ProcessPath!;
+            //获取文件夹路径
+            string? exeDirectory = Path.GetDirectoryName(exePath);
+            Process.Start("explorer.exe", exeDirectory!);
+        }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
@@ -124,7 +139,11 @@ namespace WPF_HomeTool
                 RootContentFrame.GoBack();
             }
         }
-
+        /// <summary>
+        /// 托盘中的“显示窗口”菜单点击事件，显示主窗口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TrayIconShowWindow_Click(object sender, RoutedEventArgs e)
         {
             this.Show();
@@ -132,40 +151,18 @@ namespace WPF_HomeTool
             WindowState = WindowState.Normal;
         }
 
+        /// <summary>
+        /// 托盘中的“退出程序”菜单点击事件，退出程序
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TrayIconExit_Click(object sender, RoutedEventArgs e)
         {
             TrayIcon.Dispose();
             Application.Current.Shutdown();
         }
 
-        //当用户激活应用程序窗口时，在任务栏中显示应用程序图标（因为用户可能设置了开机启动后自动最小化到托盘）
-        private void Window_Activated(object sender, EventArgs e)
-        {
-            if (!this.ShowInTaskbar)
-            {
-                //通过标志位判断是否是第一次启动，如果是第一次启动，则不显示在任务栏中，否则显示在任务栏中
-                if (_isFirstStart)
-                {
-                    _isFirstStart = false;
-                    return;
-                }
-                else
-                {
-                    this.ShowInTaskbar = true;
-                }
-            }
-        }
-        //在窗口加载时，判断是否用户设置为最小化到托盘
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (ConfigHelper.ReadKeyValue("IsStartGoToTrayIcon") == "True")
-            {
-                this.WindowState = WindowState.Minimized;
-                this.ShowInTaskbar = false;
-                TrayIcon.Visibility = Visibility.Visible;
-                ToastNotificationHelper.ShowSimpleToast("程序已启动并最小化到托盘", "在托盘中双击图标打开程序界面");
-            }
-        }
+
         //在窗口关闭时，判断是否需要最小化到托盘
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -175,15 +172,6 @@ namespace WPF_HomeTool
                 this.Hide();
                 TrayIcon.Visibility = Visibility.Visible;//显示托盘
             }
-        }
-
-        private void OpenAppLocationButton_Click(object sender, RoutedEventArgs e)
-        {
-            //获取当前应用程序exe文件所在的目录
-            string exePath = System.Environment.ProcessPath!;
-            //获取文件夹路径
-            string? exeDirectory = Path.GetDirectoryName(exePath);
-            Process.Start("explorer.exe", exeDirectory!);
         }
 
 
