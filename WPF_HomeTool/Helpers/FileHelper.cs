@@ -272,11 +272,14 @@ namespace WPF_HomeTool.Helpers
         /// <returns></returns>
         public static string ReplaceWindowsReservedCharAndTrim(string fileName)
         {
+            // Windows系统中不允许的文件名字符
             Char[] unSafeChars = { '*', ':', '\\', '/', '|', '\"', '|', '?', '<', '>' };
             foreach (char c in unSafeChars)
             {
                 fileName = fileName.Replace(c, '_');
             }
+            //在windows系统中，文件夹名称的末尾如果是英文句号“.”，会被系统自动去除，所以这里也去掉末尾的句号（顺便把其他没用的字符也去掉了）
+            fileName = fileName.Trim('.',',',';','`','\'');
             return fileName.Trim();
         }
 
