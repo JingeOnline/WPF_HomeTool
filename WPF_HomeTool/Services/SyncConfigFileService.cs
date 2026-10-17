@@ -45,8 +45,10 @@ namespace WPF_HomeTool.Services
                                 //同步Saves文件夹
                                 string saveFolder = ConfigHelper.ReadKeyValue("SavesFolder");
                                 string localDownloadAlbumsPath = ConfigHelper.ReadKeyValue("ImageFapDownloadAlbumUrlPath");
+                                string localDownloadAlbumIdPath = ConfigHelper.ReadKeyValue("ImageFapDownloadAlbumIdPath");
                                 string localUndownloadFilesPath = ConfigHelper.ReadKeyValue("ImageFapUndownloadFilePath");
                                 string oneDriveDownloadAlbumsPath = Path.Combine(targetFolderPath, "ImageFap_DownloadAlbums.txt");
+                                string oneDriveDownloadAlbumIdPath = Path.Combine(targetFolderPath, "ImageFap_DownloadAlbumIds.txt");
                                 string oneDriveUndownloadFilesPath = Path.Combine(targetFolderPath, "ImageFap_UndownloadFiles.csv");
                                 //如果本地Saves文件不存在（第一次启动），则拷贝OneDrive中的文件到本地
                                 if (!Directory.Exists(saveFolder))
@@ -67,6 +69,10 @@ namespace WPF_HomeTool.Services
                                         if (File.Exists(oneDriveUndownloadFilesPath))
                                         {
                                             File.Copy(oneDriveUndownloadFilesPath, localUndownloadFilesPath, true);
+                                        }
+                                        if (File.Exists(oneDriveDownloadAlbumIdPath))
+                                        {
+                                            File.Copy(oneDriveDownloadAlbumIdPath, localDownloadAlbumIdPath, true);
                                         }
                                     }
                                 }
