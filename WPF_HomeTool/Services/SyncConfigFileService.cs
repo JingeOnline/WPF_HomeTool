@@ -27,6 +27,9 @@ namespace WPF_HomeTool.Services
                     //必须传入CancellationToken才能在App.xaml.cs中停止时，触发取消任务。否则任务不能被终止。
                     //await Task.Delay(10000,stoppingToken);
                     //Debug.WriteLine("10 SECONDS stop");
+
+                    //检查点，检查是否请求取消操作，如果请求取消，则抛出OperationCanceledException异常
+                    stoppingToken.ThrowIfCancellationRequested();
                     string? OneDrivePath = Environment.GetEnvironmentVariable("OneDriveConsumer");
                     if (!string.IsNullOrEmpty(OneDrivePath))
                     {
@@ -36,12 +39,15 @@ namespace WPF_HomeTool.Services
                             string targetFolderPath = Path.Combine(OneDrivePath, subPath);
                             if (Directory.Exists(targetFolderPath))
                             {
+                                //检查点，检查是否请求取消操作，如果请求取消，则抛出OperationCanceledException异常
+                                stoppingToken.ThrowIfCancellationRequested();
                                 //将配置文件复制到OneDrive指定文件
                                 string configFilePath = ConfigHelper.GetConigFilePath();
                                 string destFilePath = Path.Combine(targetFolderPath, "App.config");
                                 File.Copy(configFilePath, destFilePath, true);
                                 _logger.LogInformation("已将本地config文件同步到OneDrive。");
-
+                                //检查点，检查是否请求取消操作，如果请求取消，则抛出OperationCanceledException异常
+                                stoppingToken.ThrowIfCancellationRequested();
                                 //同步Saves文件夹
                                 string saveFolder = ConfigHelper.ReadKeyValue("SavesFolder");
                                 string localDownloadAlbumsPath = ConfigHelper.ReadKeyValue("ImageFapDownloadAlbumUrlPath");
@@ -53,6 +59,8 @@ namespace WPF_HomeTool.Services
                                 //如果本地Saves文件不存在（第一次启动），则拷贝OneDrive中的文件到本地
                                 if (!Directory.Exists(saveFolder))
                                 {
+                                    //检查点，检查是否请求取消操作，如果请求取消，则抛出OperationCanceledException异常
+                                    stoppingToken.ThrowIfCancellationRequested();
                                     Controls.MessageBoxResult result=Controls.MessageBoxResult.None;
                                     Application.Current.Dispatcher.Invoke(() =>
                                     {
@@ -79,6 +87,8 @@ namespace WPF_HomeTool.Services
                                 //如果本地Save文件已经存在，则复制到OneDrive中
                                 else
                                 {
+                                    //检查点，检查是否请求取消操作，如果请求取消，则抛出OperationCanceledException异常
+                                    stoppingToken.ThrowIfCancellationRequested();
                                     if (File.Exists(localDownloadAlbumsPath))
                                     {
                                         File.Copy(localDownloadAlbumsPath, oneDriveDownloadAlbumsPath, true);
@@ -86,6 +96,10 @@ namespace WPF_HomeTool.Services
                                     if (File.Exists(localUndownloadFilesPath))
                                     {
                                         File.Copy(localUndownloadFilesPath, oneDriveUndownloadFilesPath, true);
+                                    }
+                                    if (File.Exists(localDownloadAlbumIdPath))
+                                    {
+                                        File.Copy(localDownloadAlbumIdPath, oneDriveDownloadAlbumIdPath, true);
                                     }
                                     _logger.LogInformation("已将本地Saves文件同步至OneDrive。");
                                 }
@@ -106,10 +120,10 @@ namespace WPF_HomeTool.Services
                     }
                 }, stoppingToken).ConfigureAwait(false);
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
                 //Debug.WriteLine("同步Config被取消");
-                _logger.LogInformation("向OneDrive中同步Config文件被取消");
+                _logger.LogInformation("向OneDrive中同步Config文件被终止");
             }
             catch (Exception ex)
             {
