@@ -13,35 +13,48 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <!--<RowDefinition Height="auto"/>-->
             <RowDefinition Height="*"/>
-            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <controls:PageHeader  Grid.Row="0" Title="Office 365 SDK"  Description="Office 365 SDK"/>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Grid.Row="1">
-            <WrapPanel Orientation="Horizontal">
-                <Border Style="{StaticResource MenuBorder}" Margin="0,0,8,8" Padding="8" Width="480" Height="240">
-                    <GroupBox Header="获取文件" Padding="0,8">
-                    </GroupBox>
-                </Border>
-            </WrapPanel>
-        </ScrollViewer>
-        <Border Grid.Row="2" Style="{StaticResource MenuBorder}" Margin="0,8,0,8" Height="280">
-            <TextBox HorizontalAlignment="Stretch" TextWrapping="Wrap"  
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="4*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Vertical">
+                <MenuItem Header="显示所有用户" Command="{Binding VM.ShowAllUsersCommand}" FontSize="16">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconUserGroup}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="显示我的OneDrive账户信息" Command="{Binding VM.ShowMyDriveInfoCommand}" FontSize="16">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconWorkAccount}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="显示GuoGuo的账户信息" Command="{Binding VM.ShowGuoGuoDriveInfoCommand}" FontSize="16">
+                    <MenuItem.Icon>
+                        <ContentPresenter ContentTemplate="{StaticResource IconGuestUser}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </StackPanel>
+            <Border Grid.Column="1" Style="{StaticResource MenuBorder}" Margin="0,8,0,8">
+                <TextBox HorizontalAlignment="Stretch" TextWrapping="Wrap" FontSize="16"
                      FontFamily="Cascadia Code" Background="Black" Foreground="White" CaretBrush="LightGreen" SelectionBrush="DodgerBlue"
                      VerticalScrollBarVisibility="Visible" AcceptsReturn="True" IsReadOnly="True"
                      Text="{Binding VM.ConsoleOutputText}" behaviors:TextBoxScrollBehavior.AutoScrollToEnd="True" Padding="8">
-                <TextBox.Style>
-                    <Style TargetType="TextBox">
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="Black" />
-                                <Setter Property="Foreground" Value="White" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBox.Style>
-            </TextBox>
-        </Border>
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="Black" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+            </Border>
+        </Grid>
     </Grid>
 </Page>

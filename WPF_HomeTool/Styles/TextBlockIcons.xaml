@@ -51,4 +51,13 @@
     <DataTemplate  x:Key="IconCloud">
         <TextBlock Text="&#xE753;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
     </DataTemplate>
+    <DataTemplate  x:Key="IconUserGroup">
+        <TextBlock Text="&#xE902;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate  x:Key="IconWorkAccount">
+        <TextBlock Text="&#xE631;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate  x:Key="IconGuestUser">
+        <TextBlock Text="&#xEE57;" FontFamily="{DynamicResource SymbolThemeFontFamily}" VerticalAlignment="Center" />
+    </DataTemplate>
 </ResourceDictionary>

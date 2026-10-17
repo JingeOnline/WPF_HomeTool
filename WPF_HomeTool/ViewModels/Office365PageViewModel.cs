@@ -1,14 +1,7 @@
 ﻿using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
-using Microsoft.Graph;
 using Microsoft.Graph.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Media.Protection.PlayReady;
 using WPF_HomeTool.Controls;
 using WPF_HomeTool.Helpers;
 using WPF_HomeTool.Models;
@@ -19,6 +12,7 @@ namespace WPF_HomeTool.ViewModels
     {
         private readonly ILogger<Office365PageViewModel> _logger;
         private GraphServiceClient graphClient;
+        private Office365SecretModel secretModel;
         [ObservableProperty]
         private string _ConsoleOutputText = string.Empty;
 
@@ -30,7 +24,6 @@ namespace WPF_HomeTool.ViewModels
 
         private async Task LoginToOfficeAccountAsync()
         {
-            Office365SecretModel secretModel;
             try
             {
                 secretModel = SecretHelper.GetOffice365SecretModelFromSecretFile();
@@ -46,7 +39,18 @@ namespace WPF_HomeTool.ViewModels
             {
                 ClientSecretCredential credential = new ClientSecretCredential(secretModel.TenantId, secretModel.ClientId, secretModel.SecretValue);
                 graphClient = new GraphServiceClient(credential);
-                await GetDriveFromOneDriveAsync(secretModel);
+                ConsoleOutputText = "请留意密钥到期时间2027年12月6号，请及时去Azure更新应用程序的密钥。" + Environment.NewLine;
+                ConsoleOutputText += "正在连接Microsoft Graph..." + Environment.NewLine;
+                var organization = await graphClient.Organization.GetAsync();
+
+                var tenant = organization?.Value?.FirstOrDefault();
+
+                if (tenant != null)
+                {
+                    ConsoleOutputText += $"Microsoft Graph 连接成功! Tenant ID: {tenant.Id}, Display Name: {tenant.DisplayName}" + Environment.NewLine;
+                }
+
+                //await GetDriveFromOneDriveAsync(secretModel.UserName);
             }
             catch (Exception ex)
             {
@@ -57,13 +61,14 @@ namespace WPF_HomeTool.ViewModels
         }
 
 
-        private async Task GetDriveFromOneDriveAsync(Office365SecretModel secretModel)
+        private async Task GetDriveFromOneDriveAsync(string userName)
         {
-            ConsoleOutputText = "请留意密钥到期时间2027年12月6号，请及时去Azure更新应用程序的密钥。" + Environment.NewLine;
-            ConsoleOutputText = "正在登录OneDrive..." + Environment.NewLine;
             //这一步获取网盘的ID，然后后面通过ID来获取根目录下的文件。即使只有一个网盘，也需要这样才行。
-            Drive drive = await graphClient.Users[secretModel.UserName].Drive.GetAsync();
-            ConsoleOutputText += $"登录成功！获取到OneDrive网盘ID: {drive.Id}" + Environment.NewLine;
+            Drive drive = await graphClient.Users[userName].Drive.GetAsync();
+            //Drive drive = await graphClient.Users["guoguo@xltrg.onmicrosoft.com"].Drive.GetAsync();
+            ConsoleOutputText += Environment.NewLine;
+            ConsoleOutputText += $"成功获取到{userName}的OneDrive网盘。" + Environment.NewLine;
+            ConsoleOutputText += $"网盘ID: {drive.Id}" + Environment.NewLine;
             if (drive?.Quota != null)
             {
                 long used = drive.Quota.Used ?? 0;
@@ -78,15 +83,29 @@ namespace WPF_HomeTool.ViewModels
                 ConsoleOutputText += $"使用率: {GetUsagePercentage(used, total):F2}%" + Environment.NewLine;
                 ConsoleOutputText += $"状态: {state}" + Environment.NewLine;
             }
-
-
-            //var users = await graphClient.Users.GetAsync();
-            //foreach (var user in users.Value)
-            //{
-            //    ConsoleOutputText += ($"ID: {user.Id}, Name: {user.DisplayName}, Email: {user.UserPrincipalName}") + Environment.NewLine;
-            //}
-
         }
+
+        [RelayCommand]
+        private async Task ShowAllUsersAsync()
+        {
+            ConsoleOutputText+= Environment.NewLine;
+            var users = await graphClient.Users.GetAsync();
+            foreach (var user in users.Value)
+            {
+                ConsoleOutputText += ($"ID: {user.Id}   Name: {user.DisplayName.PadRight(17)}   Email: {user.UserPrincipalName}") + Environment.NewLine;
+            }
+        }
+        [RelayCommand]
+        private async Task ShowGuoGuoDriveInfoAsync()
+        {
+            await GetDriveFromOneDriveAsync(secretModel.GuoGuoUserName);
+        }
+        [RelayCommand]
+        private async Task ShowMyDriveInfo()
+        {
+            await GetDriveFromOneDriveAsync(secretModel.UserName);
+        }
+
         // 计算使用百分比
         private double GetUsagePercentage(long used, long total)
         {

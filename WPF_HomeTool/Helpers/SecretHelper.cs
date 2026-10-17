@@ -59,6 +59,7 @@ namespace WPF_HomeTool.Helpers
             model.TenantId = GetPropertyValueFromSecretJson(appName, "TenantId");
             model.Scopes = GetPropertyValueFromSecretJson(appName, "Scopes");
             model.UserName = GetPropertyValueFromSecretJson(appName, "Username");
+            model.GuoGuoUserName = GetPropertyValueFromSecretJson(appName, "GuoGuoUserName");
             return model;
         }
     }

@@ -13,5 +13,6 @@ namespace WPF_HomeTool.Models
         public string Scopes {  get; set; }
         public string SecretValue {  get; set; }
         public string UserName { get; set; }
+        public string GuoGuoUserName { get; set; }
     }
 }
